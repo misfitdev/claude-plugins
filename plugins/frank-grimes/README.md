@@ -1,6 +1,6 @@
-# Grimes Grind Plugin
+# Frank Grimes
 
-![Grimey logo](assets/grimey.png)
+<img src="assets/grimey.png" alt="Grimey logo" width="25%">
 
 > "I've had to work hard every day of my life, and what do I have to show for it? This briefcase, and this haircut."
 > — Frank Grimes
