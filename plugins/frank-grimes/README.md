@@ -1,5 +1,7 @@
 # Grimes Grind Plugin
 
+![Grimey logo](assets/grimey.png)
+
 > "I've had to work hard every day of my life, and what do I have to show for it? This briefcase, and this haircut."
 > — Frank Grimes
 
