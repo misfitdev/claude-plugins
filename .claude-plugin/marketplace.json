@@ -1,0 +1,22 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "misfitdev-claude-plugins",
+  "description": "Custom plugins and skills for Claude Code from Misfit Development",
+  "owner": {
+    "name": "Misfit Development",
+    "email": "code@misfit.dev"
+  },
+  "plugins": [
+    {
+      "name": "frank-grimes",
+      "description": "A clinical, pessimistic iteration loop implementing Disciplined Falsification Review to find terminal flaws in code, architecture, or designs. Assumes everything is broken until proven otherwise.",
+      "version": "1.3.2",
+      "author": {
+        "name": "Misfit Development",
+        "email": "code@misfit.dev"
+      },
+      "source": "./plugins/frank-grimes",
+      "category": "development"
+    }
+  ]
+}
