@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop.sh",
+            "timeout": 300,
+            "statusMessage": "Checking if HMB refinement loop should continue"
+          }
+        ]
+      }
+    ]
+  }
+}
