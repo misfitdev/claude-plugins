@@ -28,6 +28,17 @@
       },
       "source": "./plugins/hold-my-beer",
       "category": "development"
+    },
+    {
+      "name": "conductor",
+      "description": "Context-driven spec-driven development workflows: setup, planning, implementation, status, review, and revert. Organizes work into tracks with specs, plans, and changelogs.",
+      "version": "0.3.0",
+      "author": {
+        "name": "Misfit Development",
+        "email": "code@misfit.dev"
+      },
+      "source": "./plugins/conductor",
+      "category": "development"
     }
   ]
 }
