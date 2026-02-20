@@ -1,10 +1,11 @@
 ---
 name: hold-my-beer
 description: >
-  Turns a risky or ambitious idea into a fast, disciplined execution plan with safety rails.
-  Controlled blast radius, clear stop conditions, observability, and a concrete rollback path.
+  Turns a risky or ambitious idea into a fast, disciplined execution plan with safety rails,
+  then immediately executes it. Controlled blast radius, clear stop conditions, and a concrete
+  rollback path — but the point is to DO the thing, not just plan it.
   The tone is playful; the output is operationally serious.
-  Invoke with /hold-my-beer:hmb or when asked to plan a risky change, migration, hotfix, or ambitious stunt.
+  Invoke with /hold-my-beer:hmb or when asked to execute a risky change, migration, hotfix, or ambitious stunt.
 ---
 
 # Hold My Beer: Disciplined Execution Planning

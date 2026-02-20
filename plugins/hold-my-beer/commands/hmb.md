@@ -1,5 +1,5 @@
 ---
-description: Start a Hold My Beer execution plan - turn a risky idea into a disciplined plan with safety rails, tripwires, and rollback
+description: Hold My Beer - plan it fast, then do it. Risky idea in, executed result out. Safety rails included whether you asked or not.
 arguments:
   - name: idea
     description: What you want to do - freeform description of The Thing
@@ -30,7 +30,7 @@ allowed-tools:
 
 # Hold My Beer Command
 
-Generate a disciplined execution plan for a risky or ambitious idea using the HMB agent.
+Plan fast, then execute. Takes a risky or ambitious idea, sketches the plan with safety rails, and immediately does the thing.
 
 **Arguments:**
 - `idea` (required): What you want to do (freeform text, file path, or description)

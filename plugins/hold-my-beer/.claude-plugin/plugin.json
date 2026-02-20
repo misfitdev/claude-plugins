@@ -1,7 +1,7 @@
 {
   "name": "hold-my-beer",
   "version": "1.0.0",
-  "description": "Turns risky, ambitious ideas into disciplined execution plans with safety rails, tripwires, staged rollouts, and concrete rollback paths. Playful tone, operationally serious output.",
+  "description": "Takes risky, ambitious ideas, plans them fast with safety rails, then executes immediately. Staged rollout, tripwires, rollback — but the point is to do the thing. Playful tone, operationally serious execution.",
   "author": {
     "name": "Misfit Development",
     "email": "code@misfit.dev"
