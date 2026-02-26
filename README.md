@@ -16,16 +16,18 @@ plugins/
 
 ## Installation
 
-Install all published plugins from this repo:
+Add this repo as a marketplace (one-time setup):
 
-```bash
-/plugin install @misfitdev
+```
+/plugin marketplace add misfitdev/claude-plugins
 ```
 
-Install a single plugin by name:
+Then install any plugin by name:
 
-```bash
-/plugin install <plugin>@misfitdev
+```
+/plugin install hold-my-beer@misfitdev/claude-plugins
+/plugin install frank-grimes@misfitdev/claude-plugins
+/plugin install conductor@misfitdev/claude-plugins
 ```
 
 ## Documentation

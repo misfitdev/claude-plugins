@@ -17,11 +17,9 @@ Every plan gets:
 
 ## Installation
 
-Clone the repository and copy the plugin to your plugins directory:
-
-```bash
-git clone https://github.com/misfitdev/claude-plugins.git
-cp -r claude-plugins/plugins/hold-my-beer ~/.claude/plugins/
+```
+/plugin marketplace add misfitdev/claude-plugins
+/plugin install hold-my-beer@misfitdev/claude-plugins
 ```
 
 ## Commands

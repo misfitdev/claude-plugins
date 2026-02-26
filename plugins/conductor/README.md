@@ -25,8 +25,9 @@ deep, persistent project awareness.
 
 ## Installation
 
-```bash
-claude plugin add conductor@misfitdev-claude-plugins
+```
+/plugin marketplace add misfitdev/claude-plugins
+/plugin install conductor@misfitdev/claude-plugins
 ```
 
 ## Commands

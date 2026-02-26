@@ -23,11 +23,9 @@ Your job is to prove these assumptions WRONG, not to prove the idea right.
 
 ## Installation
 
-Clone the repository and copy the plugin to your plugins directory:
-
-```bash
-git clone https://github.com/misfitdev/claude-plugins.git
-cp -r claude-plugins/plugins/frank-grimes ~/.claude/plugins/
+```
+/plugin marketplace add misfitdev/claude-plugins
+/plugin install frank-grimes@misfitdev/claude-plugins
 ```
 
 ## Commands
