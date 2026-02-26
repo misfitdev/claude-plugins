@@ -30,23 +30,32 @@ Your job is to prove these assumptions WRONG, not to prove the idea right.
 
 ## Commands
 
-### `/frank-grimes:grind <target> [--max-iterations N] [--auto-loop] [--with-api-review]`
+### `/frank-grimes:grind [target] [options]`
 
-Start a Grimes Grind on the specified target.
+Start a Grimes Grind. If invoked without arguments, prompts interactively for scope, categories, and mode.
 
 **Arguments:**
-- `target` (required): What to grind - file path, description, or "this" for current context
-- `--max-iterations N`: Maximum iterations before stopping (default: 5)
-- `--auto-loop`: Enable automatic iteration until GREEN verdict
-- `--with-api-review`: Enable Phase 2 API Correctness & Completeness review (default: false)
+- `target` (optional): File path, directory, description, or "this". Skips the scope question.
+- `--scope recent-changes|whole-repo` (optional): Shorthand scope. Skips the scope question.
+- `--categories core-quality,security-privacy,architecture-ops,code-structure` (optional): Category groups to run. Default: all.
+- `--mode fix|report` (optional): `fix` applies fixes automatically (default); `report` documents findings only.
+- `--max-iterations N` (optional): Maximum iterations before stopping (default: 5)
+- `--auto-loop` (optional): Enable automatic iteration until GREEN verdict
+- `--with-api-review` (optional): Enable Phase 2 API Correctness & Completeness review
 
 **Examples:**
 
 ```bash
-# One-shot grind on a file (Phase 1: Runtime Reliability only)
+# Interactive — prompts for scope, categories, and mode
+/frank-grimes:grind
+
+# One-shot grind on a file
 /frank-grimes:grind ./src/auth.py
 
-# Grind with API review enabled (Phase 1 + Phase 2)
+# Recent changes, report only
+/frank-grimes:grind --scope recent-changes --mode report
+
+# Grind with API review enabled
 /frank-grimes:grind ./src/api --with-api-review
 
 # Red team an architecture proposal
