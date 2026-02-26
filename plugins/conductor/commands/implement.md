@@ -11,6 +11,7 @@ allowed-tools:
   - Bash
   - Edit
   - Write
+  - AskUserQuestion
 ---
 
 ## 1.0 SYSTEM DIRECTIVE
@@ -112,32 +113,26 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
     a.  **Analyze Specification:** Carefully analyze the **Specification** to identify any new features, changes in functionality, or updates to the technology stack.
     b.  **Update Product Definition:**
         i. **Condition for Update:** Based on your analysis, you MUST determine if the completed feature or bug fix significantly impacts the description of the product itself.
-        ii. **Propose and Confirm Changes:** If an update is needed, generate the proposed changes. Then, present them to the user for confirmation:
-            > "Based on the completed track, I propose the following updates to the **Product Definition**:"
-            > ```diff
-            > [Proposed changes here, ideally in a diff format]
-            > ```
-            > "Do you approve these changes? (yes/no)"
-        iii. **Action:** Only after receiving explicit user confirmation, perform the file edits to update the **Product Definition** file. Keep a record of whether this file was changed.
+        ii. **Propose and Confirm Changes:** If an update is needed, display the proposed changes in a diff format, then use the **AskUserQuestion** tool:
+            - question: "Based on the completed track, I propose the above updates to the **Product Definition**. Do you approve these changes?"
+            - header: "Product Definition"
+            - options: `[{ label: "Approve", description: "Apply the proposed changes to the Product Definition" }, { label: "Reject", description: "Do not update the Product Definition" }]`
+        iii. **Action:** Only after the user approves, perform the file edits to update the **Product Definition** file. Keep a record of whether this file was changed.
     c.  **Update Tech Stack:**
         i. **Condition for Update:** Similarly, you MUST determine if significant changes in the technology stack are detected as a result of the completed track.
-        ii. **Propose and Confirm Changes:** If an update is needed, generate the proposed changes. Then, present them to the user for confirmation:
-            > "Based on the completed track, I propose the following updates to the **Tech Stack**:"
-            > ```diff
-            > [Proposed changes here, ideally in a diff format]
-            > ```
-            > "Do you approve these changes? (yes/no)"
-        iii. **Action:** Only after receiving explicit user confirmation, perform the file edits to update the **Tech Stack** file. Keep a record of whether this file was changed.
+        ii. **Propose and Confirm Changes:** If an update is needed, display the proposed changes in a diff format, then use the **AskUserQuestion** tool:
+            - question: "Based on the completed track, I propose the above updates to the **Tech Stack**. Do you approve these changes?"
+            - header: "Tech Stack"
+            - options: `[{ label: "Approve", description: "Apply the proposed changes to the Tech Stack" }, { label: "Reject", description: "Do not update the Tech Stack" }]`
+        iii. **Action:** Only after the user approves, perform the file edits to update the **Tech Stack** file. Keep a record of whether this file was changed.
     d. **Update Product Guidelines (Strictly Controlled):**
         i. **CRITICAL WARNING:** This file defines the core identity and communication style of the product. It should be modified with extreme caution and ONLY in cases of significant strategic shifts, such as a product rebrand or a fundamental change in user engagement philosophy. Routine feature updates or bug fixes should NOT trigger changes to this file.
         ii. **Condition for Update:** You may ONLY propose an update to this file if the track's **Specification** explicitly describes a change that directly impacts branding, voice, tone, or other core product guidelines.
-        iii. **Propose and Confirm Changes:** If the conditions are met, you MUST generate the proposed changes and present them to the user with a clear warning:
-            > "WARNING: The completed track suggests a change to the core **Product Guidelines**. This is an unusual step. Please review carefully:"
-            > ```diff
-            > [Proposed changes here, ideally in a diff format]
-            > ```
-            > "Do you approve these critical changes to the **Product Guidelines**? (yes/no)"
-        iv. **Action:** Only after receiving explicit user confirmation, perform the file edits. Keep a record of whether this file was changed.
+        iii. **Propose and Confirm Changes:** If the conditions are met, display the proposed changes with a clear warning, then use the **AskUserQuestion** tool:
+            - question: "WARNING: The completed track suggests a change to the core **Product Guidelines**. This is an unusual step. Please review carefully. Do you approve these critical changes?"
+            - header: "Product Guidelines"
+            - options: `[{ label: "Approve", description: "Apply the proposed changes to the Product Guidelines" }, { label: "Reject", description: "Do not update the Product Guidelines" }]`
+        iv. **Action:** Only after the user approves, perform the file edits. Keep a record of whether this file was changed.
 
 6.  **Final Report:** Announce the completion of the synchronization process and provide a summary of the actions taken.
     - **Construct the Message:** Based on the records of which files were changed, construct a summary message.
@@ -159,33 +154,32 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
 
 1.  **Execution Trigger:** This protocol MUST only be executed after the current track has been successfully implemented and the `SYNCHRONIZE PROJECT DOCUMENTATION` step is complete.
 
-2.  **Ask for User Choice:** You MUST prompt the user with the available options for the completed track.
-    > "Track '<track_description>' is now complete. What would you like to do?
-    > A.  **Review (Recommended):** Run the review command to verify changes before finalizing.
-    > B.  **Archive:** Move the track's folder to `conductor/archive/` and remove it from the tracks file.
-    > C.  **Delete:** Permanently delete the track's folder and remove it from the tracks file.
-    > D.  **Skip:** Do nothing and leave it in the tracks file.
-    > Please enter the option of your choice (A, B, C, or D)."
+2.  **Ask for User Choice:** Use the **AskUserQuestion** tool to prompt the user with the available options for the completed track:
+    - question: "Track '<track_description>' is now complete. What would you like to do?"
+    - header: "Track Cleanup"
+    - options: `[{ label: "Review (Recommended)", description: "Run the review command to verify changes before finalizing" }, { label: "Archive", description: "Move the track's folder to conductor/archive/ and remove it from the tracks file" }, { label: "Delete", description: "Permanently delete the track's folder and remove it from the tracks file" }, { label: "Skip", description: "Do nothing and leave it in the tracks file" }]`
 
 3.  **Handle User Response:**
-    *   **If user chooses "A" (Review):**
+    *   **If user chooses "Review":**
         *   Announce: "Please run `/conductor:review` to verify your changes. You will be able to archive or delete the track after the review."
-    *   **If user chooses "B" (Archive):**
+    *   **If user chooses "Archive":**
         i.   **Create Archive Directory:** Check for the existence of `conductor/archive/`. If it does not exist, create it.
         ii.  **Archive Track Folder:** Move the track's folder from its current location (resolved via the **Tracks Directory**) to `conductor/archive/<track_id>`.
         iii. **Remove from Tracks File:** Read the content of the **Tracks Registry** file, remove the entire section for the completed track (the part that starts with `---` and contains the track description), and write the modified content back to the file.
         iv.  **Commit Changes:** Stage the **Tracks Registry** file and `conductor/archive/`. Commit with the message `chore(conductor): Archive track '<track_description>'`.
         v.   **Announce Success:** Announce: "Track '<track_description>' has been successfully archived."
-    *   **If user chooses "C" (Delete):**
-        i. **CRITICAL WARNING:** Before proceeding, you MUST ask for a final confirmation due to the irreversible nature of the action.
-            > "WARNING: This will permanently delete the track folder and all its contents. This action cannot be undone. Are you sure you want to proceed? (yes/no)"
+    *   **If user chooses "Delete":**
+        i. **CRITICAL WARNING:** Before proceeding, use the **AskUserQuestion** tool to ask for a final confirmation due to the irreversible nature of the action:
+            - question: "WARNING: This will permanently delete the track folder and all its contents. This action cannot be undone. Are you sure you want to proceed?"
+            - header: "Confirm Delete"
+            - options: `[{ label: "Yes, delete permanently", description: "Irreversibly delete the track folder and all its contents" }, { label: "No, cancel", description: "Cancel the deletion" }]`
         ii. **Handle Confirmation:**
-            - **If 'yes'**:
+            - **If "Yes, delete permanently"**:
                 a. **Delete Track Folder:** Resolve the **Tracks Directory** and permanently delete the track's folder from `<Tracks Directory>/<track_id>`.
                 b. **Remove from Tracks File:** Read the content of the **Tracks Registry** file, remove the entire section for the completed track, and write the modified content back to the file.
                 c. **Commit Changes:** Stage the **Tracks Registry** file and the deletion of the track directory. Commit with the message `chore(conductor): Delete track '<track_description>'`.
                 d. **Announce Success:** Announce: "Track '<track_description>' has been permanently deleted."
-            - **If 'no' (or anything else)**:
+            - **If "No, cancel"**:
                 a. **Announce Cancellation:** Announce: "Deletion cancelled. The track has not been changed."
-    *   **If user chooses "D" (Skip) or provides any other input:**
+    *   **If user chooses "Skip":**
         *   Announce: "Okay, the completed track will remain in your tracks file for now."

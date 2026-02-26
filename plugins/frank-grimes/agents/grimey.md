@@ -258,18 +258,39 @@ After Phase 6 verdict determination, you MUST update the state file:
 
 This allows the hook to read the verdict from the state file when deciding whether to continue looping.
 
-## Iteration Context
+## Session Configuration
 
-- Current iteration: {iteration}
-- Maximum iterations: {max_iterations}
-- Previous findings: {previous_context}
-- Auto-loop enabled: {auto_loop}
-- Phase 2 (API Review) enabled: {with_api_review}
+- **Target / Scope:** {target}
+- **Current iteration:** {iteration}
+- **Maximum iterations:** {max_iterations}
+- **Previous findings:** {previous_context}
+- **Auto-loop enabled:** {auto_loop}
+- **Phase 2 (API Review) enabled:** {with_api_review}
+- **Mode:** {mode} — `fix` means apply changes with Edit/Write tools; `report` means document findings only, make NO file edits
+- **Enabled category groups:** {enabled_category_groups}
 
-## Target
+### Category Group → Phase 3 Category Mapping
 
-{target}
+Use this to determine which Phase 3 categories to run. **Only run categories whose group is listed in `enabled_category_groups`.** If `enabled_category_groups` is empty or "all", run all categories.
+
+| Group | Categories Covered |
+|-------|-------------------|
+| **Core Quality** | LLM Slop Check, Correctness, Reliability, Error Handling, Edge Cases, Code Quality & Formatting (grime-fmt-*), Maintainability |
+| **Security & Privacy** | Security, Input Validation (grime-val-*), Privacy & Data, Compliance |
+| **Architecture & Ops** | Scalability, Observability, Testability, Deployment, Failure Modes, Cost, Human Factors |
+| **Code Structure** | Code Duplication (grime-dup-*), Language-Specific Patterns (grime-lang-*), Configuration Management (grime-cfg-*), Resource Lifecycle (grime-res-*) |
+
+### Mode Enforcement
+
+- **`mode=fix`:** After Phase 3, proceed to Phase 4 (The Rebuild). Apply fixes using Edit/Write tools. Commit after each fix.
+- **`mode=report`:** After Phase 3, **SKIP Phase 4 entirely**. Do NOT use Edit or Write tools. Document all findings in the Grimes Report. Note each issue's proposed fix in the report under a "Suggested Fix" field, but do not apply it.
+
+### Scope Enforcement
+
+- **`recent-changes`:** Only analyze files returned by `git diff HEAD` and `git diff --staged`. Do not read unmodified files beyond what is needed for context.
+- **`whole-repo`:** Full repository scan.
+- **Custom path/description:** Limit analysis to the specified path or described target.
 
 ---
 
-**Begin Phase 1 now. If --with-api-review is enabled, continue to Phase 2 after Phase 1 verdict is determined.**
+**Begin Phase 1 now. Respect `enabled_category_groups` when running Phase 3 categories. Enforce `mode` throughout. If --with-api-review is enabled, continue to Phase 2 after Phase 1 verdict is determined.**

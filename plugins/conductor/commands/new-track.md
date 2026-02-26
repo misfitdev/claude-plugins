@@ -11,6 +11,7 @@ allowed-tools:
   - Bash
   - Edit
   - Write
+  - AskUserQuestion
 ---
 
 ## 1.0 SYSTEM DIRECTIVE
@@ -72,8 +73,9 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
 
         *   **3. Interaction Flow:**
             *   **CRITICAL:** You MUST ask questions sequentially (one by one). Do not ask multiple questions in a single turn. Wait for the user's response after each question.
-            *   The last option for every multiple-choice question MUST be "Type your own answer".
-            *   Confirm your understanding by summarizing before moving on to the next question or section..
+            *   Use the **AskUserQuestion** tool for each question. AskUserQuestion automatically includes an "Other" option for custom input — do NOT add a "Type your own answer" option.
+            *   For Additive questions, set `multiSelect: true`. For Exclusive Choice questions, set `multiSelect: false`.
+            *   Confirm your understanding by summarizing before moving on to the next question or section.
 
     *   **If FEATURE:**
         *   **Ask 3-5 relevant questions** to clarify the feature request.
@@ -87,14 +89,10 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
 
 3.  **Draft `spec.md`:** Once sufficient information is gathered, draft the content for the track's `spec.md` file, including sections like Overview, Functional Requirements, Non-Functional Requirements (if any), Acceptance Criteria, and Out of Scope.
 
-4.  **User Confirmation:** Present the drafted `spec.md` content to the user for review and approval.
-    > "I've drafted the specification for this track. Please review the following:"
-    >
-    > ```markdown
-    > [Drafted spec.md content here]
-    > ```
-    >
-    > "Does this accurately capture the requirements? Please suggest any changes or confirm."
+4.  **User Confirmation:** Present the drafted `spec.md` content to the user for review and approval. After displaying the draft, use the **AskUserQuestion** tool:
+    - question: "I've drafted the specification for this track (shown above). Does this accurately capture the requirements?"
+    - header: "Spec Review"
+    - options: `[{ label: "Approve", description: "This is correct, proceed to plan generation" }, { label: "Suggest Changes", description: "Tell me what to modify" }]`
     Await user feedback and revise the `spec.md` content until confirmed.
 
 ### 2.3 Interactive Plan Generation (`plan.md`)
@@ -112,14 +110,10 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
         - Sub-task: `    - [ ] ...`
     *   **CRITICAL: Inject Phase Completion Tasks.** Determine if a "Phase Completion Verification and Checkpointing Protocol" is defined in the **Workflow**. If this protocol exists, then for each **Phase** that you generate in `plan.md`, you MUST append a final meta-task to that phase. The format for this meta-task is: `- [ ] Task: Conductor - User Manual Verification '<Phase Name>' (Protocol in workflow.md)`.
 
-3.  **User Confirmation:** Present the drafted `plan.md` to the user for review and approval.
-    > "I've drafted the implementation plan. Please review the following:"
-    >
-    > ```markdown
-    > [Drafted plan.md content here]
-    > ```
-    >
-    > "Does this plan look correct and cover all the necessary steps based on the spec and our workflow? Please suggest any changes or confirm."
+3.  **User Confirmation:** Present the drafted `plan.md` to the user for review and approval. After displaying the draft, use the **AskUserQuestion** tool:
+    - question: "I've drafted the implementation plan (shown above). Does this plan look correct and cover all the necessary steps based on the spec and our workflow?"
+    - header: "Plan Review"
+    - options: `[{ label: "Approve", description: "The plan looks correct, proceed" }, { label: "Suggest Changes", description: "Tell me what to modify" }]`
     Await user feedback and revise the `plan.md` content until confirmed.
 
 ### 2.4 Create Track Artifacts and Update Main Plan

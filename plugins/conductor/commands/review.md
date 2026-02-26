@@ -11,6 +11,7 @@ allowed-tools:
   - Bash
   - Edit
   - Write
+  - AskUserQuestion
 ---
 
 ## 1.0 SYSTEM DIRECTIVE
@@ -54,8 +55,11 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
 2.  **Auto-Detect Scope:**
     -   If no input, read the **Tracks Registry**.
     -   Look for a track marked as `[~] In Progress`.
-    -   If one exists, ask the user: "Do you want to review the in-progress track '<track_name>'? (yes/no)"
-    -   If no track is in progress, or user says "no", ask: "What would you like to review? (Enter a track name, or typing 'current' for uncommitted changes)"
+    -   If one exists, use the **AskUserQuestion** tool:
+        - question: "I found an in-progress track: '<track_name>'. Do you want to review it?"
+        - header: "Review Scope"
+        - options: `[{ label: "Yes, review this track", description: "Review the in-progress track" }, { label: "No, choose a different scope", description: "Specify a different track or review current uncommitted changes" }]`
+    -   If no track is in progress, or user says "no", ask the user to specify the review scope (a track name or "current" for uncommitted changes).
 3.  **Confirm Scope:** Ensure you and the user agree on what is being reviewed.
 
 ### 2.2 Retrieve Context
@@ -137,15 +141,13 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
     -   If no issues found:
         > "Everything looks great! I don't see any issues."
 2.  **Action:**
-    -   **If issues found:** Ask:
-        > "Do you want me to apply the suggested fixes, fix them manually yourself, or proceed to complete the track?
-        > A. **Apply Fixes:** Automatically apply the suggested code changes.
-        > B. **Manual Fix:** Stop so you can fix issues yourself.
-        > C. **Complete Track:** Ignore warnings and proceed to cleanup.
-        > Please enter your choice (A, B, or C)."
-        -   **If "A" (Apply Fixes):** Apply the code modifications suggested in the findings using file editing tools. Then Proceed to next step.
-        -   **If "B" (Manual Fix):** Terminate operation to allow user to edit code.
-        -   **If "C" (Complete Track):** Proceed to the next step.
+    -   **If issues found:** Use the **AskUserQuestion** tool:
+        - question: "I found issues in the review (shown above). How would you like to proceed?"
+        - header: "Review Action"
+        - options: `[{ label: "Apply Fixes", description: "Automatically apply the suggested code changes" }, { label: "Manual Fix", description: "Stop so you can fix issues yourself" }, { label: "Complete Track", description: "Ignore warnings and proceed to cleanup" }]`
+        -   **If "Apply Fixes":** Apply the code modifications suggested in the findings using file editing tools. Then proceed to next step.
+        -   **If "Manual Fix":** Terminate operation to allow user to edit code.
+        -   **If "Complete Track":** Proceed to the next step.
     -   **If no issues found:** Proceed to the next step.
 
 ### 3.2 Commit Review Changes
@@ -156,14 +158,18 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
     -   If NO changes are detected, proceed to '3.3 Track Cleanup'.
     -   If changes are detected:
         a. **Check for Track Context:**
-            - If you are NOT reviewing a specific track (i.e., you don't have a `plan.md` in context), simply offer to commit the changes:
-                > "I've detected uncommitted changes. Should I commit them? (yes/no)"
-                - If 'yes', stage all changes and commit with `fix(conductor): Apply review suggestions <brief description of changes>`.
+            - If you are NOT reviewing a specific track (i.e., you don't have a `plan.md` in context), use the **AskUserQuestion** tool:
+                - question: "I've detected uncommitted changes. Should I commit them?"
+                - header: "Commit Changes"
+                - options: `[{ label: "Yes, commit them", description: "Stage all changes and commit with a review suggestions message" }, { label: "No, skip", description: "Leave the changes uncommitted" }]`
+                - If "Yes", stage all changes and commit with `fix(conductor): Apply review suggestions <brief description of changes>`.
                 - Proceed to '3.3 Track Cleanup'.
         b. **Handle Track-Specific Changes:**
-            i.   **Confirm with User:**
-                > "I've detected uncommitted changes from the review process. Should I commit these and update the track's plan? (yes/no)"
-            ii.  **If Yes:**
+            i.   **Confirm with User:** Use the **AskUserQuestion** tool:
+                - question: "I've detected uncommitted changes from the review process. Should I commit these and update the track's plan?"
+                - header: "Commit Changes"
+                - options: `[{ label: "Yes, commit and update plan", description: "Stage changes, commit, and record in plan.md" }, { label: "No, skip", description: "Leave the changes uncommitted" }]`
+            ii.  **If "Yes, commit and update plan":**
                  - **Update Plan (Add Review Task):**
                    - Read the track's `plan.md`.
                    - Append a new phase (if it doesn't exist) and task to the end of the file.
@@ -182,29 +188,30 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
                    - Stage `plan.md`.
                    - Commit with message: `conductor(plan): Mark task 'Apply review suggestions' as complete`.
                  - **Announce Success:** "Review changes committed and tracked in the plan."
-            iii. **If No:** Skip the commit and plan update. Proceed to '3.3 Track Cleanup'.
+            iii. **If "No, skip":** Skip the commit and plan update. Proceed to '3.3 Track Cleanup'.
 
 ### 3.3 Track Cleanup
 **PROTOCOL: Offer to archive or delete the reviewed track.**
 
 1.  **Context Check:** If you are NOT reviewing a specific track (e.g., just reviewing current changes without a track context), SKIP this entire section.
 
-2.  **Ask for User Choice:**
-    > "Review complete. What would you like to do with track '<track_name>'?
-    > A.  **Archive:** Move to `conductor/archive/` and update registry.
-    > B.  **Delete:** Permanently remove from system.
-    > C.  **Skip:** Leave as is.
-    > Please enter your choice (A, B, or C)."
+2.  **Ask for User Choice:** Use the **AskUserQuestion** tool:
+    - question: "Review complete. What would you like to do with track '<track_name>'?"
+    - header: "Track Cleanup"
+    - options: `[{ label: "Archive", description: "Move to conductor/archive/ and update registry" }, { label: "Delete", description: "Permanently remove from system" }, { label: "Skip", description: "Leave as is" }]`
 
 3.  **Handle User Response:**
-    *   **If "A" (Archive):**
+    *   **If "Archive":**
         i.   **Setup:** Ensure `conductor/archive/` exists.
         ii.  **Move:** Move track folder to `conductor/archive/<track_id>`.
         iii. **Update Registry:** Remove track section from **Tracks Registry**.
         iv.  **Commit:** Stage registry and archive. Commit: `chore(conductor): Archive track '<track_name>'`.
         v.   **Announce:** "Track '<track_name>' archived."
-    *   **If "B" (Delete):**
-        i.   **Confirm:** "WARNING: Irreversible deletion. Proceed? (yes/no)"
-        ii.  **If yes:** Delete track folder, remove from **Tracks Registry**, commit (`chore(conductor): Delete track '<track_name>'`), announce success.
-        iii. **If no:** Cancel.
-    *   **If "C" (Skip):** Leave track as is.
+    *   **If "Delete":**
+        i.   **Confirm:** Use the **AskUserQuestion** tool:
+            - question: "WARNING: Irreversible deletion. This cannot be undone. Proceed?"
+            - header: "Confirm Delete"
+            - options: `[{ label: "Yes, delete permanently", description: "Permanently delete the track folder and all contents" }, { label: "No, cancel", description: "Cancel the deletion" }]`
+        ii.  **If "Yes, delete permanently":** Delete track folder, remove from **Tracks Registry**, commit (`chore(conductor): Delete track '<track_name>'`), announce success.
+        iii. **If "No, cancel":** Cancel.
+    *   **If "Skip":** Leave track as is.

@@ -25,10 +25,17 @@ Confidence is not assumed; it is earned by surviving a relentless, adversarial c
 ## Quick Start
 
 ```bash
+# Interactive — prompts for scope, categories, and mode
+/frank-grimes:grind
+
+# Direct — skip prompts by specifying the target
 /frank-grimes:grind ./src/auth.ts --auto-loop
 ```
 
-This starts a structured review that will iterate automatically until the code survives the critique or reaches maximum iterations.
+When invoked without arguments, Grimes will ask three setup questions before grinding:
+1. **Scope** — Recent changes, whole repo, or a specific target
+2. **Categories** — Which of the 23 critique categories to evaluate (all enabled by default)
+3. **Mode** — Fix issues automatically or report only
 
 ## Verdicts
 
@@ -38,19 +45,25 @@ This starts a structured review that will iterate automatically until the code s
 
 ## Command Reference
 
-### `/frank-grimes:grind <target> [options]`
+### `/frank-grimes:grind [target] [options]`
 
-Starts a Grimes Grind on the specified target.
+Starts a Grimes Grind. If invoked without arguments, prompts interactively for scope, categories, and mode.
 
 **Arguments:**
-- `target` (required) - What to grind: file path, directory, code snippet, or description
+- `target` (optional) - What to grind: file path, directory, code snippet, or description. Skips the scope question.
+- `--scope recent-changes|whole-repo` (optional) - Shorthand scope. Skips the scope question.
+- `--categories core-quality,security-privacy,architecture-ops,code-structure` (optional) - Comma-separated category groups. Skips the category question. Default: all groups.
+- `--mode fix|report` (optional) - `fix` applies fixes automatically (default); `report` documents findings only without editing files. Skips the mode question.
 - `--max-iterations N` (optional) - Maximum iterations before stopping (default: 5)
 - `--auto-loop` (optional) - Automatically continue until GREEN verdict or max iterations reached
+- `--with-api-review` (optional) - Enable Phase 2 API Correctness & Completeness review
 
 **Examples:**
 ```bash
 /frank-grimes:grind ./src/auth.ts
+/frank-grimes:grind --scope recent-changes --mode report
 /frank-grimes:grind "Review this architecture" --max-iterations 3 --auto-loop
+/frank-grimes:grind ./src/api --with-api-review --mode report
 /frank-grimes:grind this --auto-loop
 ```
 
