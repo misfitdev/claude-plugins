@@ -71,7 +71,7 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
 
 2.  **Update Status to 'In Progress':**
     -   Before beginning any work, you MUST update the status of the selected track in the **Tracks Registry** file.
-    -   This requires finding the specific heading for the track (e.g., `## [ ] Track: <Description>`) and replacing it with the updated status (e.g., `## [~] Track: <Description>`) in the **Tracks Registry** file you identified earlier.
+    -   The registry uses list-item format. Find the line matching `- [ ] **Track: <Description>**` and replace `[ ]` with `[~]` to mark it in progress.
 
 3.  **Load Track Context:**
     a. **Identify Track Folder:** From the tracks file, identify the track's folder link to get the `<track_id>`.
@@ -88,7 +88,7 @@ CRITICAL: You must validate the success of every tool call. If any tool call fai
 
 5.  **Finalize Track:**
     -   After all tasks in the track's local **Implementation Plan** are completed, you MUST update the track's status in the **Tracks Registry**.
-    -   This requires finding the specific heading for the track (e.g., `## [~] Track: <Description>`) and replacing it with the completed status (e.g., `## [x] Track: <Description>`).
+    -   Find the line matching `- [~] **Track: <Description>**` and replace `[~]` with `[x]` to mark it complete.
     -   **Commit Changes:** Stage the **Tracks Registry** file and commit with the message `chore(conductor): Mark track '<track_description>' as complete`.
     -   Announce that the track is fully complete and the tracks file has been updated.
 
