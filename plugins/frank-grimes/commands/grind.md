@@ -8,7 +8,7 @@ arguments:
     description: "Shorthand scope: 'recent-changes' (git diff), 'whole-repo', or a custom path/description. Skips the scope question."
     required: false
   - name: categories
-    description: "Comma-separated category groups to enable: 'core-quality', 'security-privacy', 'architecture-ops', 'code-structure'. Defaults to all enabled."
+    description: "Comma-separated category groups to enable: 'core-quality', 'security-privacy', 'architecture-ops', 'code-structure'. Defaults to all enabled. The Documentation group is not a value here — enable it with --docs-review."
     required: false
   - name: mode
     description: "Output mode: 'fix' (apply fixes automatically, default) or 'report' (report findings only, no edits)"
@@ -22,6 +22,12 @@ arguments:
   - name: with-api-review
     description: Enable Phase 2 API Correctness review after Phase 1 (default false)
     required: false
+  - name: docs-review
+    description: "Enable documentation & comments critique (grime-doc-*, grime-api-doc-*). Off by default."
+    required: false
+  - name: no-artifact
+    description: "Suppress publishing the report as a clickable Claude web artifact. Artifact is published by default."
+    required: false
 allowed-tools:
   - Read
   - Glob
@@ -30,6 +36,8 @@ allowed-tools:
   - Edit
   - Write
   - AskUserQuestion
+  - Skill
+  - Artifact
 ---
 
 # Grimes Grind Command
@@ -43,6 +51,8 @@ Execute a Grimes Grind on the target using the grimey agent.
 - `max-iterations`: Stop after N iterations (default 5)
 - `auto-loop`: Loop until GREEN verdict if enabled (default false)
 - `with-api-review`: Enable Phase 2 API Correctness & Completeness review (default false)
+- `docs-review`: Enable documentation & comments critique (default false — off)
+- `no-artifact`: Suppress the clickable web-artifact report (published by default)
 
 **Return format:** GRIMES_RESULT JSON with verdict, findings, and fixes
 
@@ -63,7 +73,17 @@ Execute a Grimes Grind on the target using the grimey agent.
 
 # Auto-loop with API review enabled
 /frank-grimes:grind ./proto-mcp --with-api-review --auto-loop
+
+# Include documentation/comments critique (off by default)
+/frank-grimes:grind ./src --docs-review
+
+# Suppress the clickable web-artifact report (published by default)
+/frank-grimes:grind ./src --no-artifact
 ```
+
+**Defaults note:** `--docs-review` (off) and `--no-artifact` (artifact on) are read
+directly from `$ARGUMENTS` — they have no interactive prompt. If absent, docs
+critique stays off and the report artifact is published.
 
 ---
 
@@ -101,13 +121,14 @@ Execute a Grimes Grind on the target using the grimey agent.
   - options:
     ```
     [
-      { label: "Core Quality", description: "LLM Slop, Correctness, Reliability, Error Handling, Edge Cases, Code Quality & Formatting, Maintainability" },
-      { label: "Security & Privacy", description: "Security, Input Validation, Privacy & Data, Compliance" },
+      { label: "Core Quality", description: "LLM Slop, Correctness, Reliability, Error Handling, Edge Cases, Code Quality & Formatting, Maintainability, Existence Justification, Structural/Design, Better Design" },
+      { label: "Security & Privacy", description: "Security, Input Validation, Privacy & Data, Compliance, Safety/Security Theater" },
       { label: "Architecture & Ops", description: "Scalability, Observability, Testability, Deployment, Failure Modes, Cost, Human Factors" },
       { label: "Code Structure", description: "Code Duplication, Language-Specific Patterns, Configuration Management, Resource Lifecycle" }
     ]
     ```
   - Store the selected groups as `enabled_category_groups` and pass them to the grimey agent.
+  - The **Documentation** group is not offered here — it is enabled solely by `--docs-review` (off by default).
 
 ### 0.3 Mode
 
@@ -128,7 +149,9 @@ Execute a Grimes Grind on the target using the grimey agent.
 
 ## 1.0 EXECUTE GRIND
 
-Once scope, categories, and mode are determined, **execute the Grimes Grind inline in this session.** Plugin agents cannot be spawned via the Task tool — you are grimey. Adopt the grimey persona and run the full methodology below with the resolved configuration.
+Once scope, categories, and mode are determined, **execute the Grimes Grind inline in this session — you are grimey.** The grind runs inline (not as a spawned subagent) because three of its duties require the main session: the Phase 4b redesign accept/reject prompt (AskUserQuestion), the report artifact (Artifact tool), and the auto-loop stop hook's state handshake. Adopt the grimey persona and run the methodology (section 2.0) with the resolved configuration.
+
+**Initialize the state file** at `~/.cache/claude-plugins/frank-grimes/sessions/grimes-state.json` before Phase 1 (create or overwrite for a new grind): set `iteration: 1`, `max_iterations`, `last_verdict: "RED"`, `target`, `auto_loop`, `issues_found: 0`, `issues_fixed: 0`, `last_commit: null`, `last_grind_timestamp: null`. The stop hook requires the first five fields and deletes the file (silently disabling auto-loop) if any is missing.
 
 **Resolved configuration:**
 - **Target / Scope:** (from step 0.1)
@@ -137,6 +160,8 @@ Once scope, categories, and mode are determined, **execute the Grimes Grind inli
 - **Max iterations:** from `$ARGUMENTS` or default 5
 - **Auto-loop:** from `$ARGUMENTS` or default false
 - **Phase 2 (API Review):** from `$ARGUMENTS` or default false
+- **Docs review:** from `$ARGUMENTS` (`--docs-review`) or default **false**
+- **Publish artifact:** default **true**; suppressed only by `--no-artifact`
 - **Current iteration:** 1
 - **Previous findings:** none (first iteration)
 
@@ -144,82 +169,14 @@ Once scope, categories, and mode are determined, **execute the Grimes Grind inli
 
 ## 2.0 GRIMEY METHODOLOGY
 
-You are now executing as the Grimes Reviewer. Assume everything is broken until proven otherwise. Use the following structured methodology:
+You are now executing as the Grimes Reviewer. The canonical methodology is this plugin's skill file — read `${CLAUDE_PLUGIN_ROOT}/skills/frank-grimes/SKILL.md` (the frank-grimes skill) and execute it exactly with the resolved configuration. Do not improvise a variant; SKILL.md is the single source of truth for phases, categories, formats, and gating rules.
 
-### Phase 1: The Grimey Read (Absorption)
+Execution summary (details in SKILL.md):
 
-Absorb the target without trusting it. Look for what is being hidden, glossed over, or assumed.
-
-- What is this ACTUALLY doing? (Ignore claims; look at logic)
-- What unstated assumptions are baked in?
-- What is conspicuously missing?
-- What is the provenance? (LLM slop? First draft? Cargo-culted?)
-
-For multi-language projects: identify languages/frameworks, configuration sources, error handling patterns, cross-language duplication, resource cleanup, and input validation entry points.
-
-### Phase 2: Default Assumptions (The Falsification Baseline)
-
-Assume the subject suffers from: LLM Slop, unreliability, insecurity, poor planning, non-production readiness, unmaintainability, fragility, edge-case blindness, compliance violations, and hidden dependencies.
-
-**Your objective is to prove these assumptions WRONG. You do not prove the idea right.**
-
-### Phase 3: The Grind (Destruction Cycle)
-
-Systematically attack the subject across the enabled categories. Evidence-First reporting: show the specific code path BEFORE describing the risk.
-
-**Only run categories whose group is in `enabled_category_groups`. If empty or "all", run all.**
-
-| Group | Categories |
-|-------|-----------|
-| **Core Quality** | LLM Slop Check, Correctness, Reliability, Error Handling, Edge Cases, Code Quality & Formatting (grime-fmt-*), Maintainability |
-| **Security & Privacy** | Security, Input Validation (grime-val-*), Privacy & Data, Compliance |
-| **Architecture & Ops** | Scalability, Observability, Testability, Deployment, Failure Modes, Cost, Human Factors |
-| **Code Structure** | Code Duplication (grime-dup-*), Language-Specific Patterns (grime-lang-*), Configuration Management (grime-cfg-*), Resource Lifecycle (grime-res-*) |
-
-**Issue format:**
-```
-### Issue: [Short Name]
-
-**Grime ID:** grime-[prefix]-[a-z0-9]{3}
-**Evidence:** [Specific code path, scenario, or logic flaw]
-**Category:** [Category name]
-**Severity:** P0 (Critical) | P1 (High) | P2 (Medium) | P3 (Low)
-**Likelihood:** High | Medium | Low
-**Blast Radius:** [What gets affected]
-**Description of Risk:** [Impact derived from the evidence]
-```
-
-### Phase 4: The Rebuild (Mitigation)
-
-**If `mode=fix`:** For each issue, propose a fix and apply it using Edit/Write tools. Commit after each fix with `git add` and `git commit`.
-
-**If `mode=report`:** Skip Phase 4 entirely. Do NOT use Edit or Write tools. Document all findings with a "Suggested Fix" field but make no edits.
-
-Fix format (for `mode=fix`):
-```
-### Fix for [Issue Name] ([Grime ID])
-
-**Proposed Change:** Specific technical action.
-**Verification:** How to prove this fix survives the next grind.
-**Residual Risk:** What is still not perfect?
-**Regression Scope:** What must be re-checked after this change?
-```
-
-### Phase 5: Scoped Re-Grind
-
-Take the updated version and grind again, focusing strictly on the regression scope of the fixes. Note any new risks introduced by the fixes.
-
-### Phase 6: Stop Conditions & Verdict
-
-**GREEN:** All P0 risks mitigated or explicitly accepted with timeline; all P1 risks have mitigations or clear plan; at least one end-to-end verification path exists; observability sufficient.
-
-**YELLOW:** P0 risks mitigated but P1 evidence weak; verification path non-comprehensive.
-
-**RED:** Any P0 risk lacks mitigation or explicit acceptance; no verification path; observability insufficient.
-
-### Phase 7: API Quality Assessment (If `with_api_review=true`)
-
-After Phase 6, run additional Phase 2 API review categories (categories 24-29: API Design & Contracts, Package & Import Correctness, Feature Completeness, Public Interface Documentation, Language-Specific Best Practices, API Consistency). Generate API Quality Score (0-100) across 5 dimensions. Combine with Phase 1 verdict.
+- **Phases:** 1 (Grimey Read) → 2 (Default Assumptions) → 3 (The Grind) → 4 (The Rebuild) → 4b (Redesign Handling) → 5 (Scoped Re-Grind) → 6 (Stop Conditions & Verdict) → 7 (API Quality, only with `--with-api-review`) → 8 (Report Artifact, unless `--no-artifact`).
+- **Categories:** run only the groups in `enabled_category_groups` (mapping table in SKILL.md). The Documentation group runs only when `--docs-review` is set; when it is off, never critique or penalize absent documentation.
+- **Mode:** enforce `fix` vs `report` per SKILL.md's mode-enforcement rules. In `fix` mode, apply mechanical fixes first (committing each); grime-redesign-* findings always go through the Phase 4b accept/reject pause — it blocks even under `--auto-loop` and never auto-applies a reshaping.
+- **Formats:** use SKILL.md's Evidence-First issue format (BLUF line first), fix format, and Grimes Report template.
 
 ---
 
@@ -251,7 +208,9 @@ GRIMES_RESULT: {
 
 Then update the state file at `~/.cache/claude-plugins/frank-grimes/sessions/grimes-state.json`: set `last_verdict`, `issues_found`, `issues_fixed`, `last_commit`, `last_grind_timestamp`. Preserve all other fields.
 
-**If `auto_loop=true` and verdict is RED or YELLOW and current iteration < max_iterations:** Start the next iteration immediately. Carry forward unfixed findings as `previous_context` and increment `iteration`. Repeat from Phase 1 with narrowed focus on remaining P0/P1 issues.
+**If `auto_loop=true` and verdict is RED or YELLOW and current iteration < max_iterations:** Start the next iteration immediately. Carry forward unfixed findings as `previous_context` and increment `iteration`. Repeat from Phase 1 with narrowed focus on remaining P0/P1 issues. **Auto-loop still blocks at the Phase 4b redesign accept/reject prompt — that is the one intentional stop in an otherwise-unattended loop; it never auto-applies a reshaping.**
+
+The redesign accept/reject and re-grind outcomes are recorded within the existing `grime_findings[]` / `status` / `fix_applied` fields — no schema change.
 
 ---
 

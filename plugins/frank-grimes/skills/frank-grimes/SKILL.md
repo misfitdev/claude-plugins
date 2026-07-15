@@ -116,6 +116,20 @@ Systematically attack the subject across all categories. Do not stop at the firs
 **Reporting Guideline: Evidence-First**
 You must present specific evidence (code paths, scenarios, logic flaws) *before* describing the risk. Force the user to confront the "wrongness" immediately.
 
+**Category Groups (selection units):**
+
+Categories are enabled by group. Only run categories whose group is in `enabled_category_groups`; if that is empty or "all", run all groups except Documentation, which is opt-in solely via `docs_review=true`.
+
+| Group | Categories |
+|-------|-----------|
+| **Core Quality** | LLM Slop Check, Correctness, Reliability, Error Handling, Edge Cases, Code Quality & Formatting (grime-fmt-*), Maintainability, Existence Justification (grime-scope-*), Structural/Design (grime-struct-*), Better Design (grime-redesign-*) |
+| **Security & Privacy** | Security, Input Validation (grime-val-*), Privacy & Data, Compliance, Safety/Security Theater (grime-thtr-*) |
+| **Architecture & Ops** | Scalability, Observability, Testability, Deployment, Failure Modes, Cost, Human Factors |
+| **Code Structure** | Code Duplication (grime-dup-*), Language-Specific Patterns (grime-lang-*), Configuration Management (grime-cfg-*), Resource Lifecycle (grime-res-*) |
+| **Documentation** _(opt-in, off by default; enabled only when `docs_review=true`)_ | Documentation & Comments (grime-doc-*), Public Interface Documentation (grime-api-doc-*) |
+
+**Docs default OFF:** when `docs_review=false` (default), do NOT critique documentation/comments (grime-doc-*, grime-api-doc-*) and do NOT penalize their absence — anywhere, including Maintainability.
+
 **Mandatory Critique Categories:**
 
 | Category | Grimey Questions |
@@ -128,7 +142,7 @@ You must present specific evidence (code paths, scenarios, logic flaws) *before*
 | **Edge Cases** | Null/Empty/One/Many/Negative. Unicode/Emoji. SQLi/Path Traversal. |
 | **Scalability** | 10x/100x bottlenecks? Database/Memory/Network saturation? |
 | **Observability** | Is it a black box? Can we detect failure before the user does? |
-| **Maintainability** | Tech debt? Cleverness over clarity? Missing documentation? |
+| **Maintainability** | Tech debt? Cleverness over clarity? Coupling? Dead abstractions? (Documentation is NOT judged here — see grime-doc-*, opt-in only.) |
 | **Testability** | Are there tests? Do they test the right things? Coverage on error paths? |
 | **Deployment** | Rollback plan? Feature flags? Blue-green? Or YOLO push to main? |
 | **Privacy & Data** | PII handling? Retention policies? Logging sensitive data? GDPR? |
@@ -142,13 +156,19 @@ You must present specific evidence (code paths, scenarios, logic flaws) *before*
 | **Language-Specific Patterns** | Anti-patterns specific to the language? Misuse of language features? Unconventional patterns? |
 | **Configuration Management** | Are values hard-coded that should be configurable? Are secret management practices used? |
 | **Resource Lifecycle** | Are resources (files, connections, memory) properly acquired and released? Leak vectors? |
+| **Existence Justification** (grime-scope-*) | Should this code/check/abstraction exist at all? Validating a resource/path/case with NO real instances? Scaffolding for a feature that does not exist yet? Cite the absence. |
+| **Safety/Security Theater** (grime-thtr-*) | Does a guard actually guard? A check that cannot verify what it claims to (no API, no source of truth) is theater even if it runs. |
+| **Structural/Design** (grime-struct-*) | Works but shaped wrong — bespoke types propping up awkward loops, fused responsibilities, nesting hiding a missing decomposition. |
+| **Better Design** (grime-redesign-*) | A materially simpler/cleaner approach exists. Mode-gated: report-only in `report`; accept/reject + re-grind in `fix`. |
+| **Documentation & Comments** (grime-doc-*) | _Opt-in only (`docs_review=true`)._ Missing/stale/misleading comments, README usage-vs-rules, comments that restate code. Off by default. |
 
 **Output Format for Each Issue (Evidence-First):**
 
 ```markdown
 ### Issue: [Short Name]
 
-**Grime ID:** grime-[a-z0-9]{3} (base36 lowercase, e.g., grime-4x2)
+**BLUF:** One plain sentence — what is wrong and whether it blocks.
+**Grime ID:** grime-[prefix]-[a-z0-9]{3} (base36 lowercase; examples: grime-fmt-4x2, grime-val-8kp, grime-scope-1bb; plain grime-[a-z0-9]{3} for unprefixed categories)
 **Evidence:** [The specific code path, scenario, or logic flaw that proves it's wrong]
 **Category:** [From table above]
 **Severity:** P0 (Critical) | P1 (High) | P2 (Medium) | P3 (Low)
@@ -166,6 +186,11 @@ For greater specificity, use category-specific prefixes:
 - `grime-lang-[a-z0-9]{3}`: Language-specific anti-patterns (goroutine leaks, bare excepts)
 - `grime-cfg-[a-z0-9]{3}`: Configuration hardcoding (magic numbers, inconsistent values)
 - `grime-res-[a-z0-9]{3}`: Resource lifecycle issues (leaks on error paths, missing cleanup)
+- `grime-scope-[a-z0-9]{3}`: Existence justification (validating a case with no real instances, speculative scaffolding)
+- `grime-thtr-[a-z0-9]{3}`: Safety/security theater (a guard that cannot verify what it claims)
+- `grime-struct-[a-z0-9]{3}`: Structural/design (works but shaped wrong — bespoke types, fused loops, over-nesting)
+- `grime-redesign-[a-z0-9]{3}`: Better design available (mode-gated: accept/reject + re-grind in fix, report-only in report)
+- `grime-doc-[a-z0-9]{3}`: Documentation & comments (opt-in only, `docs_review=true`)
 
 Standard prefix `grime-` continues for traditional correctness/reliability/security categories.
 
@@ -331,6 +356,20 @@ For each issue, propose a fix. If a fix is impossible, document the accepted ris
 **Regression Scope:** What must be re-checked after this change?
 ```
 
+**Mode enforcement:**
+
+- **`mode=fix`:** Apply fixes using Edit/Write tools, committing after each with `git add` and `git commit`. Apply mechanical/in-scope fixes **before** any grime-redesign-\* finding (so a rejected redesign never blocks unrelated fixes). grime-redesign-\* findings are NOT applied here — route them through Phase 4b.
+- **`mode=report`:** Skip Phase 4 and Phase 4b edits entirely. Do NOT use Edit or Write tools. Document all findings with a "Suggested Fix" field but make no edits. Report grime-redesign-\* as the alternative shape only — no prompt.
+
+### Phase 4b: Redesign Handling (grime-redesign-*, `mode=fix` only)
+
+For each grime-redesign-\* finding, do NOT silently apply and do NOT silently drop:
+
+1. **Present** the current shape, the proposed better shape, and the concrete reason it is materially better (stdlib vs hand-rolled, structural parse vs regex scrape, flat vs nested, etc.).
+2. **Pause for accept/reject via AskUserQuestion.** This **always blocks until answered, even when `auto_loop=true`** — a reshaping is never applied without an explicit human accept. This is the single intentional stop point in an otherwise-unattended loop.
+3. **If rejected:** discard the redesign, continue planned fixes, record `status: "UNFIXED"`, `fix_applied: "redesign rejected by operator"`.
+4. **If accepted:** apply, `git add` + `git commit`, then **re-grind the redesigned code PLUS its blast radius** (the reshaped code and its callers/dependents), bounded to **max 3 iterations** (`redesign_regrind_iteration`, independent of the outer `max_iterations`), stopping early at GREEN. A further grime-redesign-\* found during re-grind re-enters this same pause, still within the 3-iteration cap.
+
 ### Phase 5: Scoped Re-Grind
 
 Take the updated version and grind again, focusing strictly on the **regression scope** of the fixes. Note any new risks introduced by the "fixes."
@@ -351,6 +390,34 @@ Take the updated version and grind again, focusing strictly on the **regression 
 - Any P0 risk lacks mitigation or explicit acceptance.
 - No verification path exists.
 - Observability is insufficient.
+
+### Phase 7: API Quality Assessment (only when `with_api_review=true`)
+
+After Phase 6, run the additional API review categories:
+
+| Category | Grimey Questions |
+|----------|------------------|
+| **API Design & Contracts** (grime-api-ctr-*) | Consistent error returns? Signatures match their contracts? |
+| **Package & Import Correctness** (grime-api-pkg-*) | `go_package` correct? `__init__.py` exports right? Import paths match the repo? |
+| **Feature Completeness** (grime-api-cmp-*) | Unfinished TODOs in production code? Partial implementations behind feature gates? |
+| **Public Interface Documentation** (grime-api-doc-*) | _Opt-in only (`docs_review=true`)._ Godoc/docstrings on public methods? Error conditions documented? |
+| **Language-Specific Best Practices** (grime-api-best-*) | Idiomatic? Specific exceptions? Minimal Go interfaces? |
+| **API Consistency** (grime-api-cons-*) | Similar operations handled alike? Error codes match across handlers? Get/List/Create naming consistent? |
+
+Phase 7 issues use the same Evidence-First format (including the BLUF line) with grime-api-* IDs and severities P1-P3.
+
+**API Quality Score (0-100), 20 points per dimension:** Package Correctness, Feature Completeness, Documentation Coverage, API Consistency, Best Practices Adherence. **Documentation Coverage is scored only when `docs_review=true`; when false, drop the dimension, score out of 80, and normalize to 100 (score × 100/80). Do NOT score absent docs as a failure.**
+
+Combine with the Phase 6 verdict: if Phase 6 is RED or YELLOW, the API score is secondary; if GREEN, the API score determines final API quality. Report both.
+
+### Phase 8: Report Artifact (unless `no_artifact=true`)
+
+At the end of the grind, in both modes, publish the human-facing report as a Claude web artifact so the operator gets a clickable link:
+
+- **Load the `artifact-design` skill first**, per the Artifact tool contract.
+- Content is the **report, not the GRIMES_RESULT JSON**: verdict at top, findings ordered by severity each led by its BLUF line, and — in fix mode — what was fixed, which redesign was accepted/rejected, and the re-grind outcome.
+- Write the report to a scratchpad file, then call Artifact with that file path. **Redeploy the same file path** across a session's iterations so the link stays stable; keep the favicon stable across redeploys.
+- Report surface only: it never gates the grind, and artifact failure does not change the verdict or the GRIMES_RESULT JSON.
 
 ---
 

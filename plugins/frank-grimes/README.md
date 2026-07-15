@@ -40,8 +40,10 @@ Start a Grimes Grind. If invoked without arguments, prompts interactively for sc
 - `--categories core-quality,security-privacy,architecture-ops,code-structure` (optional): Category groups to run. Default: all.
 - `--mode fix|report` (optional): `fix` applies fixes automatically (default); `report` documents findings only.
 - `--max-iterations N` (optional): Maximum iterations before stopping (default: 5)
-- `--auto-loop` (optional): Enable automatic iteration until GREEN verdict
+- `--auto-loop` (optional): Enable automatic iteration until GREEN verdict. Still pauses for the redesign accept/reject prompt (Phase 4b).
 - `--with-api-review` (optional): Enable Phase 2 API Correctness & Completeness review
+- `--docs-review` (optional): Enable documentation & comments critique (grime-doc-*, grime-api-doc-*). Off by default; when off, absent docs are never penalized.
+- `--no-artifact` (optional): Suppress the clickable web-artifact report. Published by default.
 
 **Examples:**
 
@@ -76,10 +78,13 @@ Display help and usage information for the Grimes Grind plugin.
 
 1. **Phase 1: The Grimey Read** - Understand what you're critiquing (max 3 clarifying questions)
 2. **Phase 2: Default Assumptions** - Assume it's broken in every way
-3. **Phase 3: The Grind** - Systematically attack across 17 categories
-4. **Phase 4: The Rebuild** - Propose fixes with regression scope
-5. **Phase 5: Re-Grind (Scoped)** - Verify fixes didn't introduce new problems
-6. **Phase 6: Stop Conditions** - Determine verdict
+3. **Phase 3: The Grind** - Systematically attack across the enabled critique categories
+4. **Phase 4: The Rebuild** - Propose fixes with regression scope (applied in `fix` mode)
+5. **Phase 4b: Redesign Handling** - `grime-redesign-*` findings pause for an explicit accept/reject; accepted redesigns are re-ground (max 3 scoped iterations)
+6. **Phase 5: Re-Grind (Scoped)** - Verify fixes didn't introduce new problems
+7. **Phase 6: Stop Conditions** - Determine verdict
+8. **Phase 7: API Quality Assessment** - Score API quality 0-100 (with `--with-api-review`)
+9. **Phase 8: Report Artifact** - Publish the report as a clickable web artifact (unless `--no-artifact`)
 
 ### Verdicts
 
@@ -94,8 +99,9 @@ Display help and usage information for the Grimes Grind plugin.
 When `--auto-loop` is enabled:
 1. The stop hook intercepts exit attempts
 2. If verdict is not GREEN and iterations remain, the grind continues
-3. State is persisted in `.grimes-state.json`
+3. State is persisted in `~/.cache/claude-plugins/frank-grimes/sessions/grimes-state.json`
 4. Loop exits when GREEN or max iterations reached
+5. The one intentional stop: the loop still blocks at the Phase 4b redesign accept/reject prompt — a reshaping is never applied without an explicit human accept
 
 ## Phase Structure
 
@@ -109,7 +115,7 @@ Focuses on P0/P1 defects that would prevent production deployment:
 
 **Verdict:** GREEN/YELLOW/RED based on blocking issues
 
-**Output:** GRIMES_REPORT.md with risk register, fixes, and deployment checklist
+**Output:** The Grimes Report (inline, plus a web artifact by default) with risk register and fixes, and a machine-readable `GRIMES_RESULT` JSON block for loop orchestration
 
 ---
 
@@ -122,9 +128,9 @@ Focuses on P1/P2 API quality issues:
 - API consistency (error returns, naming patterns)
 - Language best practices (no bare except, idiomatic code)
 
-**Verdict:** API Quality Score (0-100) + categorized findings
+**Verdict:** API Quality Score (0-100) + categorized findings. Without `--docs-review`, the Documentation Coverage dimension is dropped and the score is normalized from 80 — absent docs are not penalized.
 
-**Output:** API_QUALITY_REPORT.md with score breakdown and technical debt backlog
+**Output:** Score breakdown and technical debt backlog, folded into the Grimes Report and web artifact
 
 **When to use Phase 2:**
 - After Phase 1 is GREEN (API quality doesn't block production)
@@ -136,29 +142,22 @@ Focuses on P1/P2 API quality issues:
 
 ## Critique Categories
 
-The grind checks across these dimensions:
+Categories are organized into selectable groups (`--categories`); all groups except Documentation are enabled by default:
 
-### Core Categories
+| Group | Categories |
+|-------|-----------|
+| **Core Quality** | LLM Slop Check, Correctness, Reliability, Error Handling, Edge Cases, Code Quality & Formatting (grime-fmt-*), Maintainability, Existence Justification (grime-scope-*), Structural/Design (grime-struct-*), Better Design (grime-redesign-*) |
+| **Security & Privacy** | Security, Input Validation (grime-val-*), Privacy & Data, Compliance, Safety/Security Theater (grime-thtr-*) |
+| **Architecture & Ops** | Scalability, Observability, Testability, Deployment, Failure Modes, Cost, Human Factors |
+| **Code Structure** | Code Duplication (grime-dup-*), Language-Specific Patterns (grime-lang-*), Configuration Management (grime-cfg-*), Resource Lifecycle (grime-res-*) |
+| **Documentation** _(opt-in via `--docs-review`)_ | Documentation & Comments (grime-doc-*), Public Interface Documentation (grime-api-doc-*) |
 
-| Category | Focus |
-|----------|-------|
-| LLM Slop Check | Hallucinated APIs, cargo-culting, confident nonsense |
-| Correctness | Does it actually work? Invariants enforced? |
-| Reliability | Failure handling, retries, timeouts |
-| Security | Input validation, auth, secrets, injection |
-| Error Handling | Caught, logged, surfaced, or swallowed? |
-| Edge Cases | Null, empty, unicode, timezones, leap seconds |
-| Scalability | 10x? 100x? Where's the bottleneck? |
-| Observability | Metrics, logs, traces, alerts |
-| Testability | Tests exist? Test the right things? |
-| Maintainability | Understandable in 6 months? |
-| Dependencies | Reliable? Maintained? Upgrade path? |
-| Deployment | Rollback? Feature flags? YOLO push? |
-| Privacy & Data | PII, retention, GDPR |
-| Compliance | Audit logs, SOC 2, domain-specific |
-| Cost | Run cost, maintenance burden |
-| Human Factors | Will people use it correctly? |
-| Failure Modes | How does it die? Blast radius? |
+Beyond "does it work?", four judgment-axis categories ask whether the code should exist, whether its guards mean anything, and whether it is shaped right:
+
+- **Existence Justification (grime-scope-*):** validating a case with no real instances; speculative scaffolding
+- **Safety/Security Theater (grime-thtr-*):** guards that cannot verify what they claim
+- **Structural/Design (grime-struct-*):** works but shaped wrong
+- **Better Design (grime-redesign-*):** a materially simpler approach exists — in `fix` mode this pauses for an explicit accept/reject, and accepted redesigns are re-ground with their blast radius
 
 ## Output: The Grimes Report
 
@@ -168,6 +167,9 @@ Every grind produces a structured report:
 ## Grimes Grind Report: [Subject]
 
 ### Verdict: 🟢 GREEN | 🟡 YELLOW | 🔴 RED
+
+**BLUF (Bottom Line Up Front):**
+[One concise summary of the findings and the resulting level of confidence.]
 
 **Top 3 Risks:**
 1. ...

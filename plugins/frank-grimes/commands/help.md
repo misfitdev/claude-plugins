@@ -34,7 +34,7 @@ Confidence is not assumed; it is earned by surviving a relentless, adversarial c
 
 When invoked without arguments, Grimes will ask three setup questions before grinding:
 1. **Scope** — Recent changes, whole repo, or a specific target
-2. **Categories** — Which of the 23 critique categories to evaluate (all enabled by default)
+2. **Categories** — Which critique-category groups to evaluate (all enabled by default; Documentation is opt-in via `--docs-review`)
 3. **Mode** — Fix issues automatically or report only
 
 ## Verdicts
@@ -55,8 +55,10 @@ Starts a Grimes Grind. If invoked without arguments, prompts interactively for s
 - `--categories core-quality,security-privacy,architecture-ops,code-structure` (optional) - Comma-separated category groups. Skips the category question. Default: all groups.
 - `--mode fix|report` (optional) - `fix` applies fixes automatically (default); `report` documents findings only without editing files. Skips the mode question.
 - `--max-iterations N` (optional) - Maximum iterations before stopping (default: 5)
-- `--auto-loop` (optional) - Automatically continue until GREEN verdict or max iterations reached
+- `--auto-loop` (optional) - Automatically continue until GREEN verdict or max iterations reached. Note: still pauses for the redesign accept/reject prompt.
 - `--with-api-review` (optional) - Enable Phase 2 API Correctness & Completeness review
+- `--docs-review` (optional) - Enable documentation & comments critique (grime-doc-*). Off by default.
+- `--no-artifact` (optional) - Suppress the clickable web-artifact report. Published by default.
 
 **Examples:**
 ```bash
@@ -78,6 +80,6 @@ Terminates an active grind session and removes state data.
 
 ## Version
 
-Frank Grimes v1.0.0 with enforced auto-loop contract validation.
+Frank Grimes v1.4.0 with enforced auto-loop contract validation.
 
 For the full technical methodology, see `skills/frank-grimes/SKILL.md` in the plugin directory.

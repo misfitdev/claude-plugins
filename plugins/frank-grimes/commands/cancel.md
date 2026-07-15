@@ -1,11 +1,8 @@
 ---
 description: Cancel an active Grimes Grind loop or manage session state
 arguments:
-  - name: session-id
-    description: "Session ID to cancel (optional, defaults to current session)"
-    required: false
-  - name: list
-    description: "Set to 'all' to list all active grinds in ~/.cache/claude-plugins/frank-grimes/sessions/"
+  - name: status
+    description: "Set to 'status' to report the active grind without cancelling it"
     required: false
 allowed-tools:
   - Bash
@@ -14,57 +11,43 @@ allowed-tools:
 
 # Cancel Command
 
-Terminates an active Grimes Grind loop for the current or specified session.
+Terminates the active Grimes Grind loop.
+
+Grind state lives in a single fixed file — `~/.cache/claude-plugins/frank-grimes/sessions/grimes-state.json` — shared by the grind command and the auto-loop stop hook. There is at most one active grind at a time.
 
 ## Execution
 
-### Default (no arguments): Terminate Current Session Grind
+### Default (no arguments): Terminate Active Grind
 
-1. Determine session ID:
-   - Use `CLAUDE_SESSION_ID` if available.
-   - Otherwise, use MD5 hash of current working directory.
-2. Verify existence of state file: `~/.cache/claude-plugins/frank-grimes/sessions/{SESSION_ID}.json`.
-3. If found:
-   - Read and report clinical summary (iterations, verdict, issue counts).
-   - Delete the state file.
-4. If not found:
-   - Report: "No active grind found for this session."
-
-### Terminate Specific Session (--session SESSION_ID)
-
-1. Verify state file for the provided ID.
+1. Check for the state file: `~/.cache/claude-plugins/frank-grimes/sessions/grimes-state.json`.
 2. If found:
-   - Report summary and delete file.
+   - Read and report a clinical summary (target, iterations, verdict, issue counts).
+   - Delete the state file. This stops the auto-loop: with no state file, the stop hook allows exit.
 3. If not found:
-   - Report: "Session not found."
+   - Report: "No active grind found."
 
-### List All Active Grinds (--list all)
+### Status Only (`status`)
 
-1. Enumerate all state files in `~/.cache/claude-plugins/frank-grimes/sessions/`.
-2. For each file, report: Session ID, Iteration, Last Verdict, Target.
+1. Read the state file and report the summary without deleting it.
+2. If not found, report: "No active grind found."
 
 ## Output Examples
 
-**Terminate active grind (current session):**
+**Terminate active grind:**
 ```
 Grimes Grind terminated.
 
-Session: abc123def456
+Target: auth_logic.py
 Status:
 - Iterations: 2 of 5
 - Last Verdict: YELLOW
 - Issues identified: 8
 - Issues mitigated: 3
 
-State file removed.
+State file removed. Auto-loop will not continue.
 ```
 
-**List all active grinds:**
+**No active grind:**
 ```
-Active Grimes Grinds:
-
-- Session: abc123def456 | Iteration: 2/5 | Verdict: YELLOW | Target: auth_logic.py
-- Session: xyz789abc123 | Iteration: 1/5 | Verdict: RED    | Target: "New deployment plan"
-
-Total: 2 active grinds.
+No active grind found.
 ```
