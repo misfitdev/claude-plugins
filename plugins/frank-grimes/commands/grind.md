@@ -151,7 +151,7 @@ critique stays off and the report artifact is published.
 
 Once scope, categories, and mode are determined, **execute the Grimes Grind inline in this session — you are grimey.** The grind runs inline (not as a spawned subagent) because three of its duties require the main session: the Phase 4b redesign accept/reject prompt (AskUserQuestion), the report artifact (Artifact tool), and the auto-loop stop hook's state handshake. Adopt the grimey persona and run the methodology (section 2.0) with the resolved configuration.
 
-**Initialize the state file** at `~/.cache/claude-plugins/frank-grimes/sessions/grimes-state.json` before Phase 1 (create or overwrite for a new grind): set `iteration: 1`, `max_iterations`, `last_verdict: "RED"`, `target`, `auto_loop`, `issues_found: 0`, `issues_fixed: 0`, `last_commit: null`, `last_grind_timestamp: null`. The stop hook requires the first five fields and deletes the file (silently disabling auto-loop) if any is missing.
+**Initialize the state file** at `~/.cache/misfitdev-plugins/frank-grimes/sessions/grimes-state.json` before Phase 1 (create or overwrite for a new grind): set `iteration: 1`, `max_iterations`, `last_verdict: "RED"`, `target`, `auto_loop`, `issues_found: 0`, `issues_fixed: 0`, `last_commit: null`, `last_grind_timestamp: null`. The stop hook requires the first five fields and deletes the file (silently disabling auto-loop) if any is missing.
 
 **Resolved configuration:**
 - **Target / Scope:** (from step 0.1)
@@ -206,7 +206,7 @@ GRIMES_RESULT: {
 }
 ```
 
-Then update the state file at `~/.cache/claude-plugins/frank-grimes/sessions/grimes-state.json`: set `last_verdict`, `issues_found`, `issues_fixed`, `last_commit`, `last_grind_timestamp`. Preserve all other fields.
+Then update the state file at `~/.cache/misfitdev-plugins/frank-grimes/sessions/grimes-state.json`: set `last_verdict`, `issues_found`, `issues_fixed`, `last_commit`, `last_grind_timestamp`. Preserve all other fields.
 
 **If `auto_loop=true` and verdict is RED or YELLOW and current iteration < max_iterations:** Start the next iteration immediately. Carry forward unfixed findings as `previous_context` and increment `iteration`. Repeat from Phase 1 with narrowed focus on remaining P0/P1 issues. **Auto-loop still blocks at the Phase 4b redesign accept/reject prompt — that is the one intentional stop in an otherwise-unattended loop; it never auto-applies a reshaping.**
 

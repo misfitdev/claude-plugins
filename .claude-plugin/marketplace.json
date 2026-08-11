@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "misfitdev-claude-plugins",
-  "description": "Custom plugins and skills for Claude Code from Misfit Development",
+  "name": "misfitdev-plugins",
+  "description": "Cross-platform agent plugins and skills from Misfit Development",
   "owner": {
     "name": "Misfit Development",
     "email": "code@misfit.dev"
@@ -10,7 +10,7 @@
     {
       "name": "frank-grimes",
       "description": "A clinical, pessimistic iteration loop implementing Disciplined Falsification Review to find terminal flaws in code, architecture, or designs. Assumes everything is broken until proven otherwise.",
-      "version": "1.4.0",
+      "version": "1.5.0",
       "author": {
         "name": "Misfit Development",
         "email": "code@misfit.dev"
@@ -21,23 +21,12 @@
     {
       "name": "hold-my-beer",
       "description": "Turns risky, ambitious ideas into disciplined execution plans with safety rails, tripwires, staged rollouts, and concrete rollback paths. Playful tone, operationally serious output.",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "author": {
         "name": "Misfit Development",
         "email": "code@misfit.dev"
       },
       "source": "./plugins/hold-my-beer",
-      "category": "development"
-    },
-    {
-      "name": "conductor",
-      "description": "Context-driven spec-driven development workflows: setup, planning, implementation, status, review, and revert. Organizes work into tracks with specs, plans, and changelogs.",
-      "version": "0.3.0",
-      "author": {
-        "name": "Misfit Development",
-        "email": "code@misfit.dev"
-      },
-      "source": "./plugins/conductor",
       "category": "development"
     }
   ]

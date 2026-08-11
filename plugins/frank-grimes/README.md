@@ -23,14 +23,43 @@ Your job is to prove these assumptions WRONG, not to prove the idea right.
 
 ## Installation
 
-```
+Frank Grimes is published as `frank-grimes@misfitdev-plugins` on both supported hosts.
+
+### Claude Code
+
+```text
 /plugin marketplace add misfitdev/claude-plugins
-/plugin install frank-grimes@misfitdev/claude-plugins
+/plugin install frank-grimes@misfitdev-plugins
 ```
 
-## Commands
+Invoke it with `/frank-grimes:grind`.
 
-### `/frank-grimes:grind [target] [options]`
+### Codex
+
+```bash
+codex plugin marketplace add misfitdev/claude-plugins
+codex plugin add frank-grimes@misfitdev-plugins
+```
+
+Start a new thread so Codex loads the installed skill. Codex runs auto-loop iterations inline and
+always returns the report in the conversation.
+
+## Usage
+
+The workflow, categories, verdicts, and report schema are the same on both hosts. Codex accepts
+options naturally in the `$frank-grimes` prompt; Claude Code exposes the equivalent slash-command flags.
+
+### Codex entry point
+
+```text
+$frank-grimes grind the recent changes in report mode
+$frank-grimes fix ./src/auth.py and include API review
+$frank-grimes red-team this architecture, maximum 3 iterations
+```
+
+### Claude Code commands
+
+#### `/frank-grimes:grind [target] [options]`
 
 Start a Grimes Grind. If invoked without arguments, prompts interactively for scope, categories, and mode.
 
@@ -64,11 +93,11 @@ Start a Grimes Grind. If invoked without arguments, prompts interactively for sc
 /frank-grimes:grind "The proposal to use MongoDB for our financial transaction system"
 ```
 
-### `/frank-grimes:cancel`
+#### `/frank-grimes:cancel`
 
 Cancel an active Grimes Grind loop and report final status.
 
-### `/frank-grimes:help`
+#### `/frank-grimes:help`
 
 Display help and usage information for the Grimes Grind plugin.
 
@@ -84,7 +113,7 @@ Display help and usage information for the Grimes Grind plugin.
 6. **Phase 5: Re-Grind (Scoped)** - Verify fixes didn't introduce new problems
 7. **Phase 6: Stop Conditions** - Determine verdict
 8. **Phase 7: API Quality Assessment** - Score API quality 0-100 (with `--with-api-review`)
-9. **Phase 8: Report Artifact** - Publish the report as a clickable web artifact (unless `--no-artifact`)
+9. **Phase 8: Deliver Report** - Return the report inline; Claude Code can additionally publish a web artifact
 
 ### Verdicts
 
@@ -96,12 +125,11 @@ Display help and usage information for the Grimes Grind plugin.
 
 ### Auto-Loop Behavior
 
-When `--auto-loop` is enabled:
-1. The stop hook intercepts exit attempts
-2. If verdict is not GREEN and iterations remain, the grind continues
-3. State is persisted in `~/.cache/claude-plugins/frank-grimes/sessions/grimes-state.json`
-4. Loop exits when GREEN or max iterations reached
-5. The one intentional stop: the loop still blocks at the Phase 4b redesign accept/reject prompt — a reshaping is never applied without an explicit human accept
+When auto-looping is enabled, both hosts continue until GREEN or the iteration limit. The one
+intentional stop is the Phase 4b redesign decision: neither host applies a reshaping without explicit acceptance.
+
+- **Claude Code:** a Stop hook persists loop state in `~/.cache/misfitdev-plugins/frank-grimes/sessions/grimes-state.json`.
+- **Codex:** iterations run inline in the active turn; no hook or persistent state file is required.
 
 ## Phase Structure
 
@@ -115,7 +143,7 @@ Focuses on P0/P1 defects that would prevent production deployment:
 
 **Verdict:** GREEN/YELLOW/RED based on blocking issues
 
-**Output:** The Grimes Report (inline, plus a web artifact by default) with risk register and fixes, and a machine-readable `GRIMES_RESULT` JSON block for loop orchestration
+**Output:** The Grimes Report with risk register and fixes, plus a machine-readable `GRIMES_RESULT` JSON block. The report is inline on both hosts; Claude Code can additionally publish it as a web artifact.
 
 ---
 
@@ -130,7 +158,7 @@ Focuses on P1/P2 API quality issues:
 
 **Verdict:** API Quality Score (0-100) + categorized findings. Without `--docs-review`, the Documentation Coverage dimension is dropped and the score is normalized from 80 — absent docs are not penalized.
 
-**Output:** Score breakdown and technical debt backlog, folded into the Grimes Report and web artifact
+**Output:** Score breakdown and technical debt backlog, folded into the Grimes Report and any host-supported report surface
 
 **When to use Phase 2:**
 - After Phase 1 is GREEN (API quality doesn't block production)
@@ -190,7 +218,7 @@ Every grind produces a structured report:
 
 ## Dependencies
 
-- `jq` - Required for the stop hook to parse state JSON
+- `jq` - Required only for Claude Code's optional Stop-hook auto-loop; Codex's inline loop has no external dependency
 
 Install on macOS: `brew install jq`
 Install on Ubuntu: `apt-get install jq`

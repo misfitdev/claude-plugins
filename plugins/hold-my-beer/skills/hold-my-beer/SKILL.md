@@ -2,13 +2,18 @@
 name: hold-my-beer
 description: >
   Turns a risky or ambitious idea into a fast, disciplined execution plan with safety rails,
-  then immediately executes it. Controlled blast radius, clear stop conditions, and a concrete
+  then executes authorized in-scope steps. Controlled blast radius, clear stop conditions, and a concrete
   rollback path — but the point is to DO the thing, not just plan it.
   The tone is playful; the output is operationally serious.
-  Invoke with /hold-my-beer:hmb or when asked to execute a risky change, migration, hotfix, or ambitious stunt.
+  Use when explicitly invoked with $hold-my-beer or /hold-my-beer:hmb, or when asked to execute a
+  risky change, migration, hotfix, or ambitious stunt.
 ---
 
 # Hold My Beer: Disciplined Execution Planning
+
+## Runtime Contract
+
+Use the user's prompt as the idea and parse any environment, risk tolerance, time budget, or iteration limit from it. Use the host's available capabilities rather than naming a particular host's tools in the canonical workflow. Generate the HMB plan and verdict first. For `GO`, execute authorized in-scope steps; for `GO-WITH-CONSTRAINTS`, satisfy the constraints before executing; for `NO-GO`, stop after reporting the blockers. Pause before destructive, irreversible, production, or external actions that require new authority. Run requested refinement loops inline when the host has no lifecycle hook. In Codex, do not create commits unless the user explicitly requests them.
 
 ---
 
@@ -41,7 +46,7 @@ Turn an unstructured "I'm going to do The Thing" into a structured plan with:
 
 - This is not a risk register or compliance framework
 - This is not a replacement for change management tooling (PagerDuty, LaunchDarkly, etc.)
-- This does not execute the plan -- it produces the plan
+- This does not grant authority for external, destructive, or irreversible actions; execution remains bounded by the user's request and approval gates
 - This does not provide legal, medical, or financial advice
 - This does not encourage reckless behavior -- the playful tone masks operationally serious guardrails
 
@@ -693,7 +698,7 @@ Do NOT capture:
 - [ ] Stop hook for auto-loop (re-evaluate plan after execution feedback)
 - [ ] State file management for session persistence
 - [ ] Cross-platform integrations (Cursor, Gemini, ChatGPT)
-- [ ] Standalone system prompt for non-Claude LLMs
+- [ ] Standalone system prompt for hosts without native plugin support
 - [ ] 5 additional manual tests (prompts 6-10)
 
 ### Iteration 3: Polish + Adversarial Testing (Week 3)

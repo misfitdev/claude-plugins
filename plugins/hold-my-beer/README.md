@@ -17,14 +17,41 @@ Every plan gets:
 
 ## Installation
 
-```
+Hold My Beer is published as `hold-my-beer@misfitdev-plugins` on both supported hosts.
+
+### Claude Code
+
+```text
 /plugin marketplace add misfitdev/claude-plugins
-/plugin install hold-my-beer@misfitdev/claude-plugins
+/plugin install hold-my-beer@misfitdev-plugins
 ```
 
-## Commands
+Invoke it with `/hold-my-beer:hmb`.
 
-### `/hold-my-beer:hmb <idea> [options]`
+### Codex
+
+```bash
+codex plugin marketplace add misfitdev/claude-plugins
+codex plugin add hold-my-beer@misfitdev-plugins
+```
+
+Start a new thread and invoke `$hold-my-beer`, including the environment, risk tolerance, or time budget in natural language.
+
+## Usage
+
+The plan format, safety rails, and verdicts are identical on both hosts.
+
+### Codex entry point
+
+```text
+$hold-my-beer push this hotfix to production tonight with low risk tolerance
+$hold-my-beer plan and execute this weekend's database migration
+$hold-my-beer build a compiler in 48 hours in a personal environment
+```
+
+### Claude Code commands
+
+#### `/hold-my-beer:hmb <idea> [options]`
 
 Generate a disciplined execution plan.
 
@@ -52,11 +79,11 @@ Generate a disciplined execution plan.
 /hold-my-beer:hmb "rotating all API keys across 15 services" --auto-loop
 ```
 
-### `/hold-my-beer:cancel`
+#### `/hold-my-beer:cancel`
 
 Cancel an active refinement loop and report status.
 
-### `/hold-my-beer:help`
+#### `/hold-my-beer:help`
 
 Display help and usage information.
 
@@ -113,15 +140,14 @@ HMB auto-detects and selects the right template:
 
 ## Auto-Loop Behavior
 
-When `--auto-loop` is enabled:
-1. The stop hook intercepts exit attempts
-2. If verdict is not GO and iterations remain, the plan is refined
-3. State is persisted in `~/.cache/claude-plugins/hold-my-beer/sessions/`
-4. Loop exits when GO or max iterations reached
+When auto-looping is enabled, both hosts refine the plan until GO or the iteration limit.
+
+- **Claude Code:** a Stop hook persists state in `~/.cache/misfitdev-plugins/hold-my-beer/sessions/`.
+- **Codex:** refinement runs inline in the active turn; no hook or persistent state file is required.
 
 ## Dependencies
 
-- `jq` -- Required for the stop hook to parse state JSON
+- `jq` -- Required only for Claude Code's optional Stop-hook auto-loop; Codex's inline loop has no external dependency
 
 Install on macOS: `brew install jq`
 Install on Ubuntu: `apt-get install jq`
@@ -129,6 +155,7 @@ Install on Ubuntu: `apt-get install jq`
 ## Cross-Platform Usage
 
 See `integrations/USAGE.md` for guides on using HMB with:
+- Claude Code and Codex
 - Cursor (VS Code fork)
 - Gemini / Google AI Studio
 - ChatGPT / OpenAI Playground

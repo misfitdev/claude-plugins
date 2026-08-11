@@ -1,0 +1,20 @@
+{
+  "name": "misfitdev-plugins",
+  "interface": {
+    "displayName": "Misfit Development Plugins"
+  },
+  "plugins": [
+    {
+      "name": "frank-grimes",
+      "source": { "source": "local", "path": "./plugins/frank-grimes" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Development"
+    },
+    {
+      "name": "hold-my-beer",
+      "source": { "source": "local", "path": "./plugins/hold-my-beer" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Development"
+    }
+  ]
+}

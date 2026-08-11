@@ -1,0 +1,7 @@
+interface:
+  display_name: "Frank Grimes"
+  short_description: "Adversarial review until confidence is earned"
+  default_prompt: "Use $frank-grimes to grind my recent changes in report mode."
+
+policy:
+  allow_implicit_invocation: true

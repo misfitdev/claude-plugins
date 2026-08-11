@@ -1,0 +1,25 @@
+{
+  "name": "hold-my-beer",
+  "version": "1.1.0",
+  "description": "Turns risky ideas into disciplined execution with staged rollout, tripwires, observability, and rollback.",
+  "author": {
+    "name": "Misfit Development",
+    "email": "code@misfit.dev",
+    "url": "https://github.com/misfitdev"
+  },
+  "repository": "https://github.com/misfitdev/claude-plugins",
+  "license": "MIT",
+  "keywords": ["execution", "risk-management", "rollback", "migration", "hotfix"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Hold My Beer",
+    "shortDescription": "Execute ambitious changes with safety rails.",
+    "longDescription": "Turn a risky or ambitious change into a staged execution plan with measurable tripwires, rollback steps, observability, and a concrete go/no-go decision.",
+    "developerName": "Misfit Development",
+    "category": "Development",
+    "capabilities": ["Plan", "Write"],
+    "defaultPrompt": [
+      "Use $hold-my-beer to plan and execute this risky change safely."
+    ]
+  }
+}

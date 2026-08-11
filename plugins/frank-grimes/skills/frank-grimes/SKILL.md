@@ -1,11 +1,10 @@
 ---
 name: frank-grimes
 description: >
-  A clinical, pessimistic iteration loop for systematically destroying, rebuilding, and hardening ideas.
-  Assumes everything is broken until proven otherwise. Use for code review (especially AI-generated),
-  architecture review, pre-mortems, security review, incident response fixes, or any time you need
-  to find everything wrong with an idea before shipping it. Invoke with /frank-grimes:grind or when
-  asked to "red team", "critique", "find problems with", or "do a pre-mortem on" something.
+  Run an evidence-first Disciplined Falsification Review that systematically attacks, rebuilds,
+  and verifies code, architecture, plans, and designs. Use when explicitly invoked with
+  $frank-grimes or /frank-grimes:grind, or when asked to grind, red-team, critique, find problems,
+  perform a pre-mortem, review AI-generated code, assess security, or harden an incident fix.
 ---
 
 # The Grimes Grind: Disciplined Falsification Review
@@ -26,15 +25,18 @@ This is not pessimism for its own sake; it is the path to **earned confidence**.
 
 You will iterate until a relentless critic can no longer find meaningful flaws. Only then do you have confidence—not through hope, but through survival.
 
-## When to Use This Skill
+## Runtime Contract
 
-- **Code review** (especially AI-generated code): Assume it's broken.
-- **Architecture review**: Assume it won't survive production.
-- **Pre-mortems**: Assume the project will fail and prove how.
-- **Security review**: Assume it's already compromised.
-- **Incident response fixes**: Assume the fix creates new problems.
-- **Process design**: Assume people will find ways around it.
-- **Business proposals**: Assume the market will reject it.
+Resolve the review configuration from the user's request before Phase 1:
+
+- **Target:** Use the named file, directory, diff, repository, snippet, plan, or design. If omitted in a code repository, use recent staged and unstaged changes; otherwise ask one concise scope question.
+- **Categories:** Default to Core Quality, Security & Privacy, Architecture & Ops, and Code Structure. Enable Documentation only when explicitly requested.
+- **Mode:** Use `report` for review, critique, audit, or assessment requests. Use `fix` only when the user asks to change, repair, or implement.
+- **Iterations:** Default to 5. When auto-looping, continue inline until GREEN or the limit; do not depend on a lifecycle hook.
+- **API review:** Enable only when requested.
+- **Report surface:** Always return the report inline. Create an additional visual artifact only when the active product supports it and the user requested or would materially benefit from it.
+
+Use the host's available file, search, shell, edit, and user-interaction capabilities. Do not require host-specific tool names in the canonical workflow. Respect the active host's authorization boundaries; in Codex, do not create commits unless the user explicitly requested commits.
 
 ---
 
@@ -358,17 +360,17 @@ For each issue, propose a fix. If a fix is impossible, document the accepted ris
 
 **Mode enforcement:**
 
-- **`mode=fix`:** Apply fixes using Edit/Write tools, committing after each with `git add` and `git commit`. Apply mechanical/in-scope fixes **before** any grime-redesign-\* finding (so a rejected redesign never blocks unrelated fixes). grime-redesign-\* findings are NOT applied here — route them through Phase 4b.
-- **`mode=report`:** Skip Phase 4 and Phase 4b edits entirely. Do NOT use Edit or Write tools. Document all findings with a "Suggested Fix" field but make no edits. Report grime-redesign-\* as the alternative shape only — no prompt.
+- **`mode=fix`:** Apply fixes with the host's editing capabilities. In Claude Code, preserve the command workflow's per-fix commit behavior. In Codex, create commits only when the user explicitly requested them. Apply mechanical/in-scope fixes **before** any grime-redesign-\* finding (so a rejected redesign never blocks unrelated fixes). grime-redesign-\* findings are NOT applied here — route them through Phase 4b.
+- **`mode=report`:** Skip Phase 4 and Phase 4b edits entirely. Do not edit files. Document all findings with a "Suggested Fix" field but make no edits. Report grime-redesign-\* as the alternative shape only — no prompt.
 
 ### Phase 4b: Redesign Handling (grime-redesign-*, `mode=fix` only)
 
 For each grime-redesign-\* finding, do NOT silently apply and do NOT silently drop:
 
 1. **Present** the current shape, the proposed better shape, and the concrete reason it is materially better (stdlib vs hand-rolled, structural parse vs regex scrape, flat vs nested, etc.).
-2. **Pause for accept/reject via AskUserQuestion.** This **always blocks until answered, even when `auto_loop=true`** — a reshaping is never applied without an explicit human accept. This is the single intentional stop point in an otherwise-unattended loop.
+2. **Pause for an explicit accept/reject decision using the host's user-interaction capability.** This **always blocks until answered, even when `auto_loop=true`** — a reshaping is never applied without explicit human acceptance. This is the single intentional stop point in an otherwise-unattended loop.
 3. **If rejected:** discard the redesign, continue planned fixes, record `status: "UNFIXED"`, `fix_applied: "redesign rejected by operator"`.
-4. **If accepted:** apply, `git add` + `git commit`, then **re-grind the redesigned code PLUS its blast radius** (the reshaped code and its callers/dependents), bounded to **max 3 iterations** (`redesign_regrind_iteration`, independent of the outer `max_iterations`), stopping early at GREEN. A further grime-redesign-\* found during re-grind re-enters this same pause, still within the 3-iteration cap.
+4. **If accepted:** apply it, committing only when the active host workflow or user requested commits, then **re-grind the redesigned code PLUS its blast radius** (the reshaped code and its callers/dependents), bounded to **max 3 iterations** (`redesign_regrind_iteration`, independent of the outer `max_iterations`), stopping early at GREEN. A further grime-redesign-\* found during re-grind re-enters this same pause, still within the 3-iteration cap.
 
 ### Phase 5: Scoped Re-Grind
 
@@ -410,14 +412,13 @@ Phase 7 issues use the same Evidence-First format (including the BLUF line) with
 
 Combine with the Phase 6 verdict: if Phase 6 is RED or YELLOW, the API score is secondary; if GREEN, the API score determines final API quality. Report both.
 
-### Phase 8: Report Artifact (unless `no_artifact=true`)
+### Phase 8: Deliver the Report
 
-At the end of the grind, in both modes, publish the human-facing report as a Claude web artifact so the operator gets a clickable link:
+At the end of the grind, return the complete human-facing report inline. Put the verdict first, order findings by severity, lead each finding with its BLUF, and in fix mode state what changed plus the re-grind result.
 
-- **Load the `artifact-design` skill first**, per the Artifact tool contract.
-- Content is the **report, not the GRIMES_RESULT JSON**: verdict at top, findings ordered by severity each led by its BLUF line, and — in fix mode — what was fixed, which redesign was accepted/rejected, and the re-grind outcome.
-- Write the report to a scratchpad file, then call Artifact with that file path. **Redeploy the same file path** across a session's iterations so the link stays stable; keep the favicon stable across redeploys.
-- Report surface only: it never gates the grind, and artifact failure does not change the verdict or the GRIMES_RESULT JSON.
+When running under Claude Code and `no_artifact` is false, also preserve the command workflow's web-artifact publication. In Codex, do not assume an Artifact tool exists; use an available visualization capability only when it materially improves the report. An unavailable optional report surface never changes the verdict.
+
+After the human-facing report, emit the machine-readable `GRIMES_RESULT` object required by the invoking command when that command supplied its schema. For a direct `$frank-grimes` invocation, read the structured-return schema in `../../commands/grind.md`, use it unchanged, and set `commit_hash` to `null` when no commit was requested.
 
 ---
 

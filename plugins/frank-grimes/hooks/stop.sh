@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-CACHE_DIR="${HOME}/.cache/claude-plugins/frank-grimes"
+CACHE_DIR="${HOME}/.cache/misfitdev-plugins/frank-grimes"
 LOG_FILE="${CACHE_DIR}/hook.log"
 
 # Use fixed state file path for stability across directory changes
@@ -145,7 +145,7 @@ The previous iteration failed to achieve a GREEN verdict. You are required to:
 4. Deliver an updated Grimes Report using the mandatory Evidence-First format and clinical persona defined in SKILL.md.
 
 **CRITICAL STATE FILE REQUIREMENT:**
-You MUST update ~/.cache/claude-plugins/frank-grimes/sessions/grimes-state.json after determining your verdict:
+You MUST update ~/.cache/misfitdev-plugins/frank-grimes/sessions/grimes-state.json after determining your verdict:
 - Set last_verdict to your new verdict (GREEN, YELLOW, or RED)
 - Set issues_found and issues_fixed to your iteration counts
 - DO NOT change the iteration number (the hook manages that)

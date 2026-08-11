@@ -9,7 +9,7 @@
 
 set -euo pipefail
 
-CACHE_DIR="${HOME}/.cache/claude-plugins/hold-my-beer"
+CACHE_DIR="${HOME}/.cache/misfitdev-plugins/hold-my-beer"
 LOG_FILE="${CACHE_DIR}/hook.log"
 STATE_FILE="${CACHE_DIR}/sessions/hmb-state.json"
 STATE_DIR="${CACHE_DIR}/sessions"
@@ -120,7 +120,7 @@ The previous iteration did not achieve a GO verdict. You are required to:
 5. Re-evaluate all 9 sections and update the verdict.
 
 **CRITICAL STATE FILE REQUIREMENT:**
-You MUST update ~/.cache/claude-plugins/hold-my-beer/sessions/hmb-state.json after determining your verdict:
+You MUST update ~/.cache/misfitdev-plugins/hold-my-beer/sessions/hmb-state.json after determining your verdict:
 - Set last_verdict to your new verdict (GO, GO_WITH_CONSTRAINTS, or NO_GO)
 - Set stages and tripwires counts
 - DO NOT change the iteration number (the hook manages that)

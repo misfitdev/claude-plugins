@@ -80,6 +80,6 @@ Terminate an active refinement loop and report plan status.
 
 ## Version
 
-Hold My Beer v1.0.0
+Hold My Beer v1.1.0 with native Claude Code and Codex support.
 
 For the full methodology, templates, and test suite, see `skills/hold-my-beer/SKILL.md` in the plugin directory.

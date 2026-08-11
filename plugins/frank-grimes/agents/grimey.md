@@ -97,7 +97,7 @@ Execution summary (details in SKILL.md):
 
 After Phase 6 verdict determination, you MUST update the state file:
 
-1. Read current state: `~/.cache/claude-plugins/frank-grimes/sessions/grimes-state.json`. If the file does not exist (first iteration), create it with the full schema: `iteration`, `max_iterations`, `last_verdict`, `target`, `auto_loop`, `issues_found`, `issues_fixed`, `last_commit`, `last_grind_timestamp`. The stop hook validates the first five fields and deletes the state file if any is missing — a malformed file silently disables auto-loop.
+1. Read current state: `~/.cache/misfitdev-plugins/frank-grimes/sessions/grimes-state.json`. If the file does not exist (first iteration), create it with the full schema: `iteration`, `max_iterations`, `last_verdict`, `target`, `auto_loop`, `issues_found`, `issues_fixed`, `last_commit`, `last_grind_timestamp`. The stop hook validates the first five fields and deletes the state file if any is missing — a malformed file silently disables auto-loop.
 2. Update these fields:
    - `last_verdict`: Your verdict (GREEN, YELLOW, or RED)
    - `issues_found`: Total issues identified in this iteration

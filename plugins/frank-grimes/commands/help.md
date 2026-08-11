@@ -80,6 +80,6 @@ Terminates an active grind session and removes state data.
 
 ## Version
 
-Frank Grimes v1.4.0 with enforced auto-loop contract validation.
+Frank Grimes v1.5.0 with native Claude Code and Codex support.
 
 For the full technical methodology, see `skills/frank-grimes/SKILL.md` in the plugin directory.

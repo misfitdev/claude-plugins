@@ -1,0 +1,7 @@
+interface:
+  display_name: "Hold My Beer"
+  short_description: "Execute risky changes with serious safety rails"
+  default_prompt: "Use $hold-my-beer to plan and execute this risky change safely."
+
+policy:
+  allow_implicit_invocation: true

@@ -5,7 +5,7 @@ arguments:
     description: "Session ID to cancel (optional, defaults to current session)"
     required: false
   - name: list
-    description: "Set to 'all' to list all active HMB sessions in ~/.cache/claude-plugins/hold-my-beer/sessions/"
+    description: "Set to 'all' to list all active HMB sessions in ~/.cache/misfitdev-plugins/hold-my-beer/sessions/"
     required: false
 allowed-tools:
   - Bash
@@ -23,7 +23,7 @@ Terminates an active Hold My Beer refinement loop for the current or specified s
 1. Determine session ID:
    - Use `CLAUDE_SESSION_ID` if available.
    - Otherwise, use MD5 hash of current working directory.
-2. Verify existence of state file: `~/.cache/claude-plugins/hold-my-beer/sessions/{SESSION_ID}.json`.
+2. Verify existence of state file: `~/.cache/misfitdev-plugins/hold-my-beer/sessions/{SESSION_ID}.json`.
 3. If found:
    - Read and report summary (iterations, verdict, domain, stages).
    - Delete the state file.
@@ -40,7 +40,7 @@ Terminates an active Hold My Beer refinement loop for the current or specified s
 
 ### List All Active Sessions (--list all)
 
-1. Enumerate all state files in `~/.cache/claude-plugins/hold-my-beer/sessions/`.
+1. Enumerate all state files in `~/.cache/misfitdev-plugins/hold-my-beer/sessions/`.
 2. For each file, report: Session ID, Iteration, Last Verdict, Domain, Idea summary.
 
 ## Output Examples

@@ -1,6 +1,6 @@
 {
   "name": "frank-grimes",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "A clinical, pessimistic iteration loop implementing Disciplined Falsification Review to find terminal flaws in code, architecture, or designs. Assumes everything is broken until proven otherwise.",
   "author": {
     "name": "Misfit Development",

@@ -1,6 +1,6 @@
 {
   "name": "hold-my-beer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Takes risky, ambitious ideas, plans them fast with safety rails, then executes immediately. Staged rollout, tripwires, rollback — but the point is to do the thing. Playful tone, operationally serious execution.",
   "author": {
     "name": "Misfit Development",

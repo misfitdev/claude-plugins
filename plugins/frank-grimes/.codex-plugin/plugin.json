@@ -1,0 +1,27 @@
+{
+  "name": "frank-grimes",
+  "version": "1.5.0",
+  "description": "A clinical falsification loop that finds terminal flaws in code, architecture, and designs, then verifies the repairs.",
+  "author": {
+    "name": "Misfit Development",
+    "email": "code@misfit.dev",
+    "url": "https://github.com/misfitdev"
+  },
+  "repository": "https://github.com/misfitdev/claude-plugins",
+  "license": "MIT",
+  "keywords": ["code-review", "security", "red-team", "falsification", "quality"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Frank Grimes",
+    "shortDescription": "Adversarial review until confidence is earned.",
+    "longDescription": "Grind code, architecture, plans, or designs through an evidence-first falsification review. Report flaws or fix them, re-test the affected surface, and stop only at an explicit GREEN, YELLOW, or RED verdict.",
+    "developerName": "Misfit Development",
+    "category": "Development",
+    "capabilities": ["Review", "Write"],
+    "defaultPrompt": [
+      "Use $frank-grimes to grind my recent changes in report mode."
+    ],
+    "composerIcon": "./assets/grimey.png",
+    "logo": "./assets/grimey.png"
+  }
+}
